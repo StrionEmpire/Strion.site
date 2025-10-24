@@ -22,11 +22,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div style={{ ...wrap, display: "flex", alignItems: "center", gap: 14, height: 64 }}>
             <Link href="/" style={{ ...navLink, fontWeight: 700, letterSpacing: ".04em" }}>STRION</Link>
             <nav style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
-              <Link href="/work" style={navLink}>Work</Link>
-              <Link href="/about" style={navLink}>About</Link>
-              <Link href="/contact" style={navLink}>Contact</Link>
-              <Link href="/custom" style={cta}>Start Your Design</Link>
-            </nav>
+  <Link href="/work" style={navLink}>Work</Link>
+  <Link href="/shop" style={navLink}>Shop</Link>
+  <Link href="/signature" style={navLink}>Signature</Link>
+  <Link href="/energetic" style={navLink}>Energetic Crafting</Link>
+  <Link href="/commercial" style={navLink}>Commercial</Link>
+  <Link href="/residential" style={navLink}>Residential</Link>
+  <Link href="/sets" style={navLink}>Sets</Link>
+  <Link href="/about" style={navLink}>About</Link>
+  <Link href="/contact" style={navLink}>Contact</Link>
+  <Link href="/custom" style={cta}>Start Your Design</Link>
+</nav>
           </div>
         </header>
 
