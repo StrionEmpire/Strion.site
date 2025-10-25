@@ -1,12 +1,11 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
 import React, { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-// import your other hooks, components, and styling below
-// example: import { useState, useMemo, useEffect } from "react";
+
+// Keep this page dynamic so Next doesn't try to pre-render it.
+export const dynamic = "force-dynamic"; // ✅
+// DO NOT export `revalidate` here.
 
 export default function ConfiguratorPage() {
   return (
@@ -19,18 +18,13 @@ export default function ConfiguratorPage() {
 function ConfiguratorInner() {
   const searchParams = useSearchParams();
 
-  // 🧠 all your existing configurator logic goes here:
-  // const [wood, setWood] = useState("Walnut");
-  // const riverType = searchParams.get("river") || "None";
-  // etc...
-
+  // TODO: keep your existing configurator state + UI here.
+  // Example placeholder UI so the page compiles:
   return (
     <main style={{ padding: 32 }}>
       <h1>Custom Build Configurator</h1>
-      <p>Design and price your own table, furniture, or feature wall.</p>
-
-      {/* keep your existing JSX layout here, 
-          such as dropdowns, previews, buttons, etc. */}
+      <p>Design and price your build.</p>
+      {/* paste your existing controls/sections back in here */}
     </main>
   );
 }
