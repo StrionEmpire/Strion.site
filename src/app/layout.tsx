@@ -16,6 +16,8 @@ const footer: React.CSSProperties = { borderTop: "1px solid #2a2a2a", marginTop:
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head> <meta name="google-site-verification" content="SHH4fuPojnzRiHCP93Fc7lDNLZjHB2RHTKWRtbI6SMQ" />
+      </head>
       <body style={{ background: "#0C0C0C", color: "#EEE", margin: 0 }}>
         {/* HEADER */}
         <header style={header}>
