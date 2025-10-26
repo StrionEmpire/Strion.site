@@ -20,29 +20,88 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body style={{ background: "#0C0C0C", color: "#EEE", margin: 0 }}>
         {/* HEADER */}
-        <header style={header}>
-          <div style={{ ...wrap, display: "flex", alignItems: "center", gap: 14, height: 64 }}>
-            <Link href="/" style={{ ...navLink, fontWeight: 700, letterSpacing: ".04em" }}>STRION</Link>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-  <img
-    src="/file_000000007a4461f59f24187f958711dc~2.png"
-    alt="Strion Empire Logo"
-    style={{ height: 50, width: "auto", objectFit: "contain" }}
-  />
-  <h1 style={{ color: "#fff", fontSize: "1.5rem", margin: 0 }}>STRION</h1>
-</div>    <nav style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
-  <Link href="/work" style={navLink}>Work</Link>
-  <Link href="/shop" style={navLink}>Shop</Link>
-  <Link href="/signature" style={navLink}>Signature</Link>
-  <Link href="/energetic" style={navLink}>Energetic Crafting</Link>
-  <Link href="/commercial" style={navLink}>Commercial</Link>
-  <Link href="/residential" style={navLink}>Residential</Link>
-  <Link href="/sets" style={navLink}>Sets</Link>
-  <Link href="/about" style={navLink}>About</Link>
-  <Link href="/contact" style={navLink}>Contact</Link>
-  <Link href="/custom" style={cta}>Start Your Design</Link>
-</nav>
-          </div>
+<header style={{ position: "sticky", top: 0, zIndex: 50, background: "#0C0C0C", borderBottom: "1px solid #222" }}>
+  <div style={{ maxWidth: 1200, margin: "0 auto", padding: "12px 16px", display: "flex", alignItems: "center", gap: 16 }}>
+    {/* Brand left */}
+    <a href="/" aria-label="Strion Home" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
+      <img
+        src="/file_000000007a4461f59f24187f958711dc~2.png"  // <-- your uploaded logo file
+        alt="STRION logo"
+        style={{ height: 36, width: "auto", objectFit: "contain" }}
+        onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/sigil.svg"; }}
+      />
+      <span style={{ color: "#D6B36E", fontWeight: 700, letterSpacing: 2 }}>STRION</span>
+    </a>
+
+    {/* Spacer */}
+    <div style={{ flex: 1 }} />
+
+    {/* Mobile menu (details/summary: no JS needed in a Server Component) */}
+    <details style={{ position: "relative", display: "block" }}>
+      <summary
+        role="button"
+        aria-label="Toggle navigation"
+        style={{
+          listStyle: "none",
+          cursor: "pointer",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "8px 10px",
+          border: "1px solid #333",
+          borderRadius: 8,
+          color: "#D6B36E",
+          background: "transparent"
+        }}
+      >
+        ☰ Menu
+      </summary>
+
+      {/* Menu panel (mobile) */}
+      <div
+        style={{
+          position: "absolute",
+          right: 0,
+          marginTop: 8,
+          minWidth: 260,
+          background: "#111",
+          border: "1px solid #222",
+          borderRadius: 12,
+          boxShadow: "0 10px 30px rgba(0,0,0,.5)",
+          padding: 10
+        }}
+      >
+        <nav style={{ display: "grid", gap: 6 }}>
+          <a href="/work"        className="navlink">Work</a>
+          <a href="/shop"        className="navlink">Shop</a>
+          <a href="/signature"   className="navlink">Signature</a>
+          <a href="/energetic"   className="navlink">Energetic</a>
+          <a href="/commercial"  className="navlink">Commercial</a>
+          <a href="/residential" className="navlink">Residential</a>
+          <a href="/sets"        className="navlink">Sets</a>
+          <a href="/about"       className="navlink">About</a>
+          <a href="/contact"     className="navlink">Contact</a>
+          <a href="/custom"      className="cta">Start Your Design</a>
+        </nav>
+      </div>
+    </details>
+  </div>
+
+  {/* Desktop nav bar (no wrap, scrolls inside itself on small widths) */}
+  <div style={{ borderTop: "1px solid #222" }}>
+    <nav className="topnav">
+      <a href="/work"        className="navlink">Work</a>
+      <a href="/shop"        className="navlink">Shop</a>
+      <a href="/signature"   className="navlink">Signature</a>
+      <a href="/energetic"   className="navlink">Energetic</a>
+      <a href="/commercial"  className="navlink">Commercial</a>
+      <a href="/residential" className="navlink">Residential</a>
+      <a href="/sets"        className="navlink">Sets</a>
+      <a href="/about"       className="navlink">About</a>
+      <a href="/contact"     className="navlink">Contact</a>
+      <a href="/custom"      className="cta">Start Your Design</a>
+    </nav>
+  </div>
         </header>
 
         {/* PAGE CONTENT */}
