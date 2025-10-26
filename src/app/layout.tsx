@@ -23,7 +23,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <header style={header}>
           <div style={{ ...wrap, display: "flex", alignItems: "center", gap: 14, height: 64 }}>
             <Link href="/" style={{ ...navLink, fontWeight: 700, letterSpacing: ".04em" }}>STRION</Link>
-            <nav style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+  <img
+    src="/file_000000007a4461f59f24187f958711dc~2.png"
+    alt="Strion Empire Logo"
+    style={{ height: 50, width: "auto", objectFit: "contain" }}
+  />
+  <h1 style={{ color: "#fff", fontSize: "1.5rem", margin: 0 }}>STRION</h1>
+</div>    <nav style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
   <Link href="/work" style={navLink}>Work</Link>
   <Link href="/shop" style={navLink}>Shop</Link>
   <Link href="/signature" style={navLink}>Signature</Link>
