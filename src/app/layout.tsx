@@ -25,9 +25,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     {/* Brand left */}
     <a href="/" aria-label="Strion Home" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
       <img
-        src="/file_000000007a4461f59f24187f958711dc~2.png"  // <-- your uploaded logo file
-        alt="STRION logo"
-        style={{ height: 36, width: "auto", objectFit: "contain" }}
+  src="/file_000000007a4461f59f24187f958711dc~2.png"  // or ~3.png if that's the one
+  alt="STRION logo"
+  style={{ height: 36, width: "auto", objectFit: "contain" }}
+/
         onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/sigil.svg"; }}
       />
       <span style={{ color: "#D6B36E", fontWeight: 700, letterSpacing: 2 }}>STRION</span>
