@@ -1,3 +1,58 @@
 
 /* minimal; Tailwind optional later */
 html,body{margin:0}
+/* --- Header / Nav fixes --- */
+.topnav {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8px 10px;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;               /* prevents page side-scroll */
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;            /* keep links as "tabs" on one line */
+  scrollbar-width: thin;
+}
+
+.navlink {
+  color: #ddd;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  display: inline-block;
+}
+
+.navlink:hover {
+  color: #f1d28a;
+  border-color: #333;
+  background: #111;
+}
+
+.cta {
+  color: #0B0B0B;
+  background: linear-gradient(180deg, #E2C785 0%, #CBA457 100%);
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 12px;
+  text-decoration: none;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.cta:hover {
+  filter: brightness(1.05);
+}
+
+/* Hide the mobile <details> menu on wide screens */
+@media (min-width: 960px) {
+  header > div:first-child > details { display: none; }
+}
+
+/* Hide the desktop ribbon on extra small widths, rely on the mobile details menu */
+@media (max-width: 959px) {
+  .topnav { display: none; }
+}
+
+/* Make images never push layout wider */
+img { max-width: 100%; height: auto; }
