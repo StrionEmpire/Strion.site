@@ -3,119 +3,95 @@ import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "STRION — Crafted by Vision. Matter, Mastered.",
-  description: "Energetic Crafting for spaces & souls.",
+  title: "STRION — Energetic Crafting™",
+  description:
+    "Custom Carpentry- Tables, Fixtures, and epoxy builds tuned with sacred geometry, metals, and crystals. Instant estimates. Nationwide white-glove service.",
 };
-
-const wrap: React.CSSProperties = { maxWidth: 1100, margin: "0 auto", padding: "0 20px" };
-const header: React.CSSProperties = { position: "sticky", top: 0, zIndex: 20, backdropFilter: "blur(6px)", background: "rgba(0,0,0,.5)", borderBottom: "1px solid #2a2a2a" };
-const navLink: React.CSSProperties = { padding: "10px 12px", color: "#ddd", textDecoration: "none" };
-const cta: React.CSSProperties = { background: "#C6A746", color: "#111", padding: "10px 14px", borderRadius: 10, fontWeight: 700, textDecoration: "none" };
-const footer: React.CSSProperties = { borderTop: "1px solid #2a2a2a", marginTop: 40 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <head> <meta name="google-site-verification" content="SHH4fuPojnzRiHCP93Fc7lDNLZjHB2RHTKWRtbI6SMQ" />
-      </head>
-      <body style={{ background: "#0C0C0C", color: "#EEE", margin: 0 }}>
-        {/* HEADER */}
-<header style={{ position: "sticky", top: 0, zIndex: 50, background: "#0C0C0C", borderBottom: "1px solid #222" }}>
-  <div style={{ maxWidth: 1200, margin: "0 auto", padding: "12px 16px", display: "flex", alignItems: "center", gap: 16 }}>
-    {/* Brand left */}
-    <a href="/" aria-label="Strion Home" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-      <img
-  src="/file_000000007a4461f59f24187f958711dc~2.png"  // or ~3.png if that's the one
-  alt="STRION logo"
-  style={{ height: 36, width: "auto", objectFit: "contain" }}
-/
-        onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/sigil.svg"; }}
-      />
-      <span style={{ color: "#D6B36E", fontWeight: 700, letterSpacing: 2 }}>STRION</span>
-    </a>
+      <body>
+        {/* ===== Header ===== */}
+        <header className="site-header">
+          <div className="header-inner">
+            {/* Brand */}
+            <Link href="/" className="brand" aria-label="STRION Home">
+              {/* If you uploaded a logo file, update the src below to your filename */}
+              <img
+                src="/file_000000007a4461f59f24187f958711dc~2.png"
+                alt="STRION logo"
+                className="brand-logo"
+              />
+              <span className="brand-text">STRION</span>
+            </Link>
 
-    {/* Spacer */}
-    <div style={{ flex: 1 }} />
+            {/* Primary Nav */}
+            <nav className="primary-nav">
+              <Link href="/about">About</Link>
+              <Link href="/categories">Categories</Link>
+              <Link href="/energetic">Energetic</Link>
+              <Link href="/commercial">Commercial</Link>
+              <Link href="/residential">Residential</Link>
+              <Link href="/signature">Signature</Link>
+              <Link href="/work">Work</Link>
+              <Link href="/shop">Shop</Link>
+              <Link href="/contact">Contact</Link>
+              <Link href="/custom" className="btn-cta">Start Your Design</Link>
+            </nav>
+          </div>
 
-    {/* Mobile menu (details/summary: no JS needed in a Server Component) */}
-    <details style={{ position: "relative", display: "block" }}>
-      <summary
-        role="button"
-        aria-label="Toggle navigation"
-        style={{
-          listStyle: "none",
-          cursor: "pointer",
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          padding: "8px 10px",
-          border: "1px solid #333",
-          borderRadius: 8,
-          color: "#D6B36E",
-          background: "transparent"
-        }}
-      >
-        ☰ Menu
-      </summary>
-
-      {/* Menu panel (mobile) */}
-      <div
-        style={{
-          position: "absolute",
-          right: 0,
-          marginTop: 8,
-          minWidth: 260,
-          background: "#111",
-          border: "1px solid #222",
-          borderRadius: 12,
-          boxShadow: "0 10px 30px rgba(0,0,0,.5)",
-          padding: 10
-        }}
-      >
-        <nav style={{ display: "grid", gap: 6 }}>
-          <a href="/work"        className="navlink">Work</a>
-          <a href="/shop"        className="navlink">Shop</a>
-          <a href="/signature"   className="navlink">Signature</a>
-          <a href="/energetic"   className="navlink">Energetic</a>
-          <a href="/commercial"  className="navlink">Commercial</a>
-          <a href="/residential" className="navlink">Residential</a>
-          <a href="/sets"        className="navlink">Sets</a>
-          <a href="/about"       className="navlink">About</a>
-          <a href="/contact"     className="navlink">Contact</a>
-          <a href="/custom"      className="cta">Start Your Design</a>
-        </nav>
-      </div>
-    </details>
-  </div>
-
-  {/* Desktop nav bar (no wrap, scrolls inside itself on small widths) */}
-  <div style={{ borderTop: "1px solid #222" }}>
-    <nav className="topnav">
-      <a href="/work"        className="navlink">Work</a>
-      <a href="/shop"        className="navlink">Shop</a>
-      <a href="/signature"   className="navlink">Signature</a>
-      <a href="/energetic"   className="navlink">Energetic</a>
-      <a href="/commercial"  className="navlink">Commercial</a>
-      <a href="/residential" className="navlink">Residential</a>
-      <a href="/sets"        className="navlink">Sets</a>
-      <a href="/about"       className="navlink">About</a>
-      <a href="/contact"     className="navlink">Contact</a>
-      <a href="/custom"      className="cta">Start Your Design</a>
-    </nav>
-  </div>
+          {/* Optional ribbon (secondary) */}
+          <nav className="secondary-nav">
+            <Link href="/nationwide">Nationwide Service</Link>
+            <Link href="/sets">Sets</Link>
+            <Link href="/categories#wall">Wall Panels & Lights</Link>
+            <Link href="/categories#conference">Conference</Link>
+            <Link href="/categories#island">Kitchen Islands</Link>
+            <Link href="/categories#bar">Bar & Counter Tops</Link>
+          </nav>
         </header>
 
-        {/* PAGE CONTENT */}
-        <main>{children}</main>
+        {/* ===== Page Container ===== */}
+        <main className="page-container">
+          <div className="page-inner">{children}</div>
+        </main>
 
-        {/* FOOTER */}
-        <footer style={footer}>
-          <div style={{ ...wrap, padding: 18, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <div style={{ fontWeight: 700 }}>STRION</div>
-            <div style={{ color: "#999" }}>© {new Date().getFullYear()} STRION — Crafted by Vision. Matter, Mastered.</div>
+        {/* ===== Footer ===== */}
+        <footer className="site-footer">
+          <div className="footer-wrap">
+            <div className="footer-col">
+              <div className="brand footer-brand">
+                <img
+                  src="/file_000000007a4461f59f24187f958711dc~2.png"
+                  alt="STRION logo"
+                  className="brand-logo"
+                />
+                <span className="brand-text">STRION</span>
+              </div>
+              <p className="muted">
+                Energetic Crafting™ — custom live-edge & epoxy builds tuned with geometry,
+                conductive metals, and crystal lattices. Legs are sold & arranged separately due
+                to changing availability. Nationwide white-glove service.
+              </p>
+            </div>
+
+            <div className="footer-col">
+              <h4>Explore</h4>
+              <Link href="/custom">Configurator</Link>
+              <Link href="/categories">Build Categories</Link>
+              <Link href="/about">About the Movement</Link>
+            </div>
+
+            <div className="footer-col">
+              <h4>Contact</h4>
+              <a href="mailto:hello@strioncraft.com">hello@strioncraft.com</a>
+              <p className="muted">Atlanta, GA • Nationwide</p>
+            </div>
           </div>
+
+          <div className="footer-legal">© {new Date().getFullYear()} STRION. All rights reserved.</div>
         </footer>
       </body>
     </html>
   );
-}
