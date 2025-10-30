@@ -1,5 +1,12 @@
 "use client";
+import Hero from "./components/Hero";
 
+export default function Home() {
+  return (
+    <>
+      <Hero />
+    
+}
 import Link from "next/link";
 import { useMemo } from "react";
 
