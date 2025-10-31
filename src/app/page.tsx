@@ -1,35 +1,35 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-black text-white">
-      <section
-        className="w-full min-h-[80vh] flex items-center justify-center text-center px-6"
-        style={{
-          backgroundImage:
-            "linear-gradient(to bottom, rgba(0,0,0,0.75), rgba(0,0,0,0.85)), url('/file_000000007a4461f59f24187f958711dc~3.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }}
-      >
-        <div className="max-w-3xl mx-auto">
-          <div className="mx-auto mb-6 h-24 w-24 relative">
+      <section className="relative w-full min-h-[90vh] overflow-hidden flex items-center justify-center">
+        <Image
+          src="/file_000000007a4461f59f24187f958711dc~3.png"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover opacity-20"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black" />
+        <div className="relative z-10 text-center px-6 max-w-4xl">
+          <div className="mx-auto mb-6 relative h-24 w-24">
             <Image
               src="/file_000000007a4461f59f24187f958711dc~2.png"
               alt="STRION crest"
               fill
               className="object-contain"
-              priority
             />
           </div>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-[#E8C987]">
-            STRION — Energetic Crafting™
+            Custom Carpentry • Energetic Crafting™
           </h1>
           <p className="mt-5 text-lg md:text-xl text-neutral-200 leading-relaxed">
-            Heirloom furniture and architectural elements in premium hardwoods,
-            sacred geometry, refined metals, and crystal integration — engineered for legacy.
+            Heirloom furniture and architectural elements forged from premium hardwoods,
+            sacred geometry, metals, and crystal integration—engineered for legacy.
           </p>
           <div className="mt-8 flex flex-wrap gap-4 justify-center">
             <Link
@@ -53,8 +53,9 @@ export default function Home() {
           Precision Meets Resonance
         </h2>
         <p className="mt-4 text-lg text-neutral-300">
-          Live-edge tables, resin inlays, sacred geometry panels, resonance lighting, and statement builds
-          for residential, commercial, and spiritual spaces — crafted in Georgia, delivered nationwide.
+          Live-edge tables, resin inlays, sacred geometry panels, resonance lighting,
+          and statement builds for residential, commercial, and spiritual spaces—crafted
+          in Georgia, delivered nationwide.
         </p>
         <div className="mt-8 flex flex-wrap gap-4 justify-center text-sm">
           <Link href="/categories" className="underline hover:no-underline">
