@@ -1,160 +1,180 @@
+import Image from "next/image";
 import Link from "next/link";
-const gold = "#E8C987";
 
 export default function Home() {
   return (
-    <main>
+    <main className="bg-black text-white">
       {/* HERO */}
-      <section
-        className="relative min-h-[70vh] flex items-center"
-        style={{
-          backgroundImage:
-            "linear-gradient(to bottom, rgba(0,0,0,0.85), rgba(0,0,0,0.96)), url('/file_000000007a4461f59f24187f958711dc~3.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <div className="container text-center">
-          <img
-            src="/file_000000007a4461f59f24187f958711dc~2.png"
-            alt=""
-            width={72}
-            height={72}
-            className="mx-auto mb-5 opacity-95"
-          />
-          <p className="uppercase tracking-[0.25em] text-[11px] text-neutral-400">
-            Original Studio • Pioneering
-          </p>
-          <h1 className="mt-2 text-4xl md:text-6xl font-bold tracking-tight" style={{ color: gold }}>
-            Energetic Crafting™
+      <section className="relative min-h-[86vh] flex items-center">
+        <Image
+          src="/file_000000007a4461f59f24187f958711dc~3.png"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover opacity-25"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-black/70 to-black" />
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-28">
+          <div className="flex items-center gap-4 mb-6">
+            <Image src="/crest.svg" alt="STRION crest" width={56} height={56} />
+            <span className="tracking-[0.25em] text-sm text-[#E8C987]">STRION</span>
+          </div>
+          <h1 className="max-w-4xl text-4xl md:text-6xl font-extrabold leading-tight">
+            Custom Carpentry &{" "}
+            <span className="text-[#E8C987]">Energetic Crafting™</span>
           </h1>
-          <p className="mt-4 max-w-3xl mx-auto text-neutral-300 text-lg md:text-xl leading-relaxed">
-            Custom carpentry that merges sacred geometry, premium hardwoods, refined metal inlays,
-            and optional crystal integration—engineered for legacy.
+          <p className="mt-4 max-w-3xl text-base md:text-xl text-neutral-200">
+            Heirloom furniture and architectural elements forged from premium hardwoods,
+            sacred-geometry discipline, refined metals, and optional crystal integration —
+            engineered for legacy and presence.
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
+          <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/custom"
-              className="rounded-lg px-6 py-3 font-semibold text-black"
-              style={{ backgroundColor: gold }}
+              className="inline-flex items-center justify-center px-6 py-3 rounded-lg font-semibold bg-[#E8C987] text-black hover:opacity-90 transition"
             >
               Start Your Design
             </Link>
             <Link
-              href="/about"
-              className="rounded-lg px-6 py-3 font-semibold border border-[--gold] text-[--gold] hover:bg-[--gold] hover:text-black transition"
-              style={{ ["--gold" as any]: gold }}
-            >
-              Learn Our Method
-            </Link>
-          </div>
-
-          <div className="mt-8 flex flex-wrap gap-2 justify-center text-[11px]">
-            {["Heirloom Craft", "Sacred Geometry", "Premium Hardwoods", "Nationwide Delivery"].map((t) => (
-              <span key={t} className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-neutral-300">
-                {t}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CATEGORY CARDS */}
-      <section className="container py-14">
-        <h2 className="text-2xl md:text-3xl font-semibold text-center mb-8" style={{ color: gold }}>
-          Explore Commissions
-        </h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            {
-              href: "/residential",
-              title: "Residential",
-              blurb: "Dining tables, consoles, vanities, mantels, stair & wall features.",
-            },
-            {
-              href: "/commercial",
-              title: "Commercial",
-              blurb: "Reception desks, feature walls, bar tops, conference tables.",
-            },
-            {
-              href: "/energetic",
-              title: "Energetic Crafting™",
-              blurb: "Geometry-driven motifs and resonance-aware detailing.",
-            },
-            {
-              href: "/signature",
-              title: "Signature Series",
-              blurb: "Limited runs with rare materials and refined geometries.",
-            },
-            {
-              href: "/sets",
-              title: "Sets & Collections",
-              blurb: "Coordinated suites for cohesive homes and brands.",
-            },
-            {
-              href: "/work",
-              title: "Recent Builds",
-              blurb: "A living archive of select projects and processes.",
-            },
-          ].map((c) => (
-            <Link
-              key={c.href}
-              href={c.href}
-              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] p-6 hover:bg-white/[0.06] transition"
-            >
-              <div className="pointer-events-none absolute -top-20 -right-20 h-52 w-52 rounded-full"
-                   style={{ background: "radial-gradient(closest-side, rgba(232,201,135,0.10), transparent 70%)" }} />
-              <div className="relative">
-                <div className="text-lg font-semibold" style={{ color: gold }}>
-                  {c.title}
-                </div>
-                <div className="text-sm text-neutral-300 mt-2">{c.blurb}</div>
-                <div
-                  className="mt-4 inline-block text-xs font-medium text-neutral-300 group-hover:text-black px-3 py-1 rounded-full border border-white/10 group-hover:bg-[--gold] group-hover:border-transparent transition"
-                  style={{ ["--gold" as any]: gold }}
-                >
-                  Explore →
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* STORY STRIP */}
-      <section className="container pb-20">
-        <div
-          className="rounded-2xl border border-white/10 p-8 md:p-12 bg-white/[0.03]"
-          style={{ background: "linear-gradient(180deg, rgba(232,201,135,0.06), rgba(232,201,135,0.02))" }}
-        >
-          <h3 className="text-xl md:text-2xl font-semibold mb-3" style={{ color: gold }}>
-            The STRION Approach
-          </h3>
-          <p className="text-neutral-300 leading-relaxed">
-            We design and build with intention. Every piece is proportioned for harmony, crafted for longevity,
-            and detailed for presence. From statement dining tables to reception features and resonance lighting,
-            STRION unites advanced carpentry with sacred-geometry discipline and material intelligence to achieve
-            a result that feels inevitable — and undeniably yours.
-          </p>
-          <div className="mt-6 flex gap-3 flex-wrap">
-            <Link
               href="/work"
-              className="inline-block rounded-lg px-5 py-3 border border-[--gold] text-[--gold] hover:bg-[--gold] hover:text-black transition"
-              style={{ ["--gold" as any]: gold }}
+              className="inline-flex items-center justify-center px-6 py-3 rounded-lg font-semibold border border-[#E8C987] text-[#E8C987] hover:bg-[#E8C987] hover:text-black transition"
             >
               View Recent Builds
             </Link>
-            <Link
-              href="/custom"
-              className="inline-block rounded-lg px-5 py-3 font-semibold text-black"
-              style={{ backgroundColor: gold }}
-            >
-              Commission a Piece
+          </div>
+
+          <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-neutral-300">
+            <div className="rounded-md border border-white/10 bg-white/5 p-3">Heirloom Craft</div>
+            <div className="rounded-md border border-white/10 bg-white/5 p-3">Sacred Geometry</div>
+            <div className="rounded-md border border-white/10 bg-white/5 p-3">Premium Hardwoods</div>
+            <div className="rounded-md border border-white/10 bg-white/5 p-3">Nationwide Delivery</div>
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURED CATEGORIES */}
+      <section className="relative w-full max-w-7xl mx-auto px-4 md:px-8 py-14 md:py-20">
+        <h2 className="text-2xl md:text-3xl font-semibold text-[#E8C987]">Featured Categories</h2>
+        <p className="mt-2 text-neutral-300">
+          From concept to heirloom: tables, panels, lighting, built-ins, and statement features.
+        </p>
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Card
+            title="Residential"
+            desc="Dining, consoles, vanities, mantels, stair & wall features."
+            href="/residential"
+          />
+          <Card
+            title="Commercial"
+            desc="Reception desks, feature walls, bar tops, conference tables."
+            href="/commercial"
+          />
+          <Card
+            title="Energetic Crafting™"
+            desc="Geometry-driven motifs and resonance-aware detailing with refined metals and optional crystal inlays."
+            href="/energetic"
+          />
+          <Card
+            title="Signature Series"
+            desc="Limited runs with rare materials and refined geometries."
+            href="/signature"
+          />
+          <Card
+            title="Resonance Lighting"
+            desc="Custom fixtures that anchor presence and soften a room’s feel."
+            href="/categories"
+          />
+          <Card
+            title="Sets & Collections"
+            desc="Coordinated suites for cohesive spaces and brands."
+            href="/sets"
+          />
+        </div>
+
+        <p className="mt-6 text-xs text-neutral-400">
+          Legs are sold & arranged separately due to changing availability.
+        </p>
+      </section>
+
+      {/* BRAND PANEL */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/file_000000007a4461f59f24187f958711dc~3.png"
+            alt=""
+            fill
+            sizes="100vw"
+            className="object-cover opacity-10"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black" />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4 md:px-8 py-14 md:py-20">
+          <h3 className="text-2xl md:text-3xl font-semibold">The STRION Approach</h3>
+          <p className="mt-3 max-w-4xl text-neutral-300">
+            We design and build with intention. Every piece is proportioned for harmony,
+            crafted for longevity, and detailed for presence. Whether you’re commissioning a
+            statement dining table, a reception feature, or resonance lighting, STRION unites
+            advanced carpentry with sacred-geometry discipline and material intelligence to
+            achieve a result that feels inevitable — and undeniably yours.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/work" className="underline underline-offset-4 decoration-[#E8C987]">
+              View Recent Builds
             </Link>
+            <Link href="/about" className="underline underline-offset-4 decoration-[#E8C987]">
+              Learn Our Method
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA STRIP */}
+      <section className="w-full">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-10 md:py-14">
+          <div className="rounded-xl border border-[#E8C987]/30 bg-gradient-to-r from-[#E8C987]/10 to-transparent p-6 md:p-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h4 className="text-xl md:text-2xl font-semibold">Ready to begin your commission?</h4>
+                <p className="mt-1 text-neutral-300">
+                  Tell us your dimensions, use, and aesthetic direction — we’ll refine, prototype, and quote.
+                </p>
+              </div>
+              <Link
+                href="/custom"
+                className="inline-flex items-center justify-center px-6 py-3 rounded-lg font-semibold bg-[#E8C987] text-black hover:opacity-90 transition"
+              >
+                Start Your Design
+              </Link>
+            </div>
           </div>
         </div>
       </section>
     </main>
   );
 }
+
+/* lightweight inline card component (no hooks) */
+function Card({
+  title,
+  desc,
+  href,
+}: {
+  title: string;
+  desc: string;
+  href: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group rounded-xl border border-white/10 bg-white/5 p-5 hover:border-[#E8C987]/60 hover:bg-white/[0.08] transition"
+    >
+      <h3 className="text-lg font-semibold text-white group-hover:text-[#E8C987]">{title}</h3>
+      <p className="mt-1 text-sm text-neutral-300">{desc}</p>
+      <span className="mt-3 inline-block text-sm text-[#E8C987] group-hover:translate-x-0.5 transition">
+        Explore →
+      </span>
+    </Link>
+  );
+        }
