@@ -154,11 +154,6 @@ export default function CustomConfiguratorPage() {
 
   return (
     <div className="wrap">
-      <style jsx global>{`
-        /* Prevent sideways scroll */
-        html, body, #__next { overflow-x: hidden; }
-        *, *::before, *::after { box-sizing: border-box; }
-      `}</style>
 
       <style jsx>{`
         .wrap { max-width: 1080px; margin: 0 auto; padding: 24px; color: #e7d38c; }
