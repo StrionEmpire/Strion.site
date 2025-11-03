@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState } from "react";
@@ -155,48 +156,7 @@ export default function CustomConfiguratorPage() {
   return (
     <div className="wrap">
 
-      <style jsx>{`
-        .wrap { max-width: 1080px; margin: 0 auto; padding: 24px; color: #e7d38c; }
-        .crumbs { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; }
-        .title { font-size: 28px; font-weight: 700; margin: 8px 0 16px; }
-        .sub   { opacity: 0.8; margin-bottom: 20px; line-height: 1.5; }
 
-        .grid { display: grid; gap: 20px; }
-        /* 2 columns on large screens only */
-        @media (min-width: 1024px) {
-          .grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); }
-        }
-
-        .card { background: #0b0b0b; border: 1px solid #2c2c2c; border-radius: 16px; padding: 24px; min-width: 0; }
-
-        .row1, .row2, .row3 { display: grid; gap: 16px; }
-        .row1 { grid-template-columns: 1fr; }
-        .row2 { grid-template-columns: 1fr; }
-        .row3 { grid-template-columns: 1fr; }
-
-        /* bump to 2 columns on medium screens */
-        @media (min-width: 700px) {
-          .row2 { grid-template-columns: 1fr 1fr; }
-        }
-        /* bump to 3 columns when there is room */
-        @media (min-width: 900px) {
-          .row3 { grid-template-columns: 1fr 1fr 1fr; }
-        }
-
-        .label { font-size: 14px; opacity: 0.85; margin-bottom: 6px; display: block; }
-        .input, .select, .textarea {
-          width: 100%; border-radius: 10px; padding: 12px 14px;
-          background: #111; border: 1px solid #2a2a2a; color: #eaeaea;
-        }
-        .textarea { min-height: 120px; resize: vertical; }
-
-        .estBox {
-          background: #111; border: 1px solid #2a2a2a; border-radius: 12px; padding: 16px; margin-bottom: 14px;
-        }
-
-        /* Make long words wrap instead of overflow */
-        .wrap, .card, .estBox { word-wrap: break-word; overflow-wrap: anywhere; }
-      `}</style>
 
       <header className="crumbs">
         <Link href="/" style={{ textDecoration: "none", color: "#e7d38c" }}>← Home</Link>
