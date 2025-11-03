@@ -18,3 +18,37 @@ a:hover { color: #fff; }
 .bg-gold { background: var(--gold); }
 /* Clamp widths */
 .container { @apply mx-auto max-w-7xl px-4 md:px-6; }
+/* === Custom page CSS moved from styled-jsx === */
+.wrap { max-width: 1080px; margin: 0 auto; padding: 24px; color: #e7d38c; }
+.crumbs { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; }
+.crumbs a { color: #e7d38c; opacity: 0.85; }
+.crumbs a:hover { opacity: 1; }
+
+.title { font-size: 28px; font-weight: 700; margin: 8px 0 16px; line-height: 1.2; }
+.subtitle { color: #d7c78a; opacity: 0.9; }
+
+.section { margin: 28px 0; padding: 20px; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; background: rgba(255,255,255,0.035); }
+.section h3 { color: #e7d38c; font-weight: 600; margin-bottom: 10px; }
+
+.grid { display: grid; grid-template-columns: repeat(1, minmax(0,1fr)); gap: 14px; }
+@media (min-width: 640px) { .grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+@media (min-width: 1024px) { .grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+
+.card { border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px; background: rgba(255,255,255,0.03); }
+.card label { color: #f1e7b3; font-size: 12px; display: block; margin-bottom: 6px; opacity: 0.9; }
+.card input, .card select, .card textarea {
+  width: 100%; background: rgba(255,255,255,0.04); color: #fff; border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 10px 12px;
+}
+.card small { color: #c9b87a; opacity: 0.8; }
+
+.row { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 768px) { .row { grid-template-columns: 1fr 1fr; } }
+
+.pill { display: inline-block; padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #dec98a; font-size: 12px; }
+
+.hint { color: #c6bb8b; font-size: 12px; opacity: 0.85; }
+
+/* Prevent sideways scroll + sane box model */
+html, body { overflow-x: hidden; }
+*, *::before, *::after { box-sizing: border-box; }
