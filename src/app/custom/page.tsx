@@ -1,562 +1,577 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
 
-/* ──────────────────────────────────────────────────────────────────────────────
-   TYPES & CORE CONSTANTS
-──────────────────────────────────────────────────────────────────────────────── */
+/* ========= OPTION SETS ========= */
 
-type BuildKind =
-  | "table"
-  | "panel"
-  | "shelf"
-  | "trim"
-  | "fixture"
-  | "entertainment"
-  | "lighting"
-  | "railing";
-
-const BUILD_TYPES: { id: BuildKind; label: string }[] = [
-  { id: "table",         label: "Table" },
-  { id: "panel",         label: "Wall Panel" },
-  { id: "shelf",         label: "Floating Shelf" },
-  { id: "trim",          label: "Interior Trim/Moulding" },
-  { id: "fixture",       label: "Feature / Fixture" },
-  { id: "entertainment", label: "Entertainment Center" },
-  { id: "lighting",      label: "Energetic Lighting" },
-  { id: "railing",       label: "Railing / Guard" },
-];
-
-// Base rates (raised one tier as requested)
-const BASE_RATES = {
-  table:         140,   // $/sqft top
-  panel:         120,   // $/sqft face
-  shelf:          95,   // $/LF per shelf (depth factor)
-  trim:           55,   // $/LF (profile factor)
-  fixture:       160,   // $/sqft envelope or per-piece fallback
-  entertainment:  90,   // $/cubic ft carcass volume
-  lighting:      180,   // $/sqft illuminated surface
-  railing:       160,   // $/LF
-} as const;
-
-const COMPLEXITY = {
-  resinRiver: 1.25,
-  sacredGeom: 1.15,
-  heavyMetal: 1.18,
-  crystalFX:  1.12,
-  lightingFX: 1.20,
-};
-
-// Shop minimums by type
-const MINIMUMS = {
-  table: 1800, panel: 900, shelf: 450, trim: 350, fixture: 1200,
-  entertainment: 2800, lighting: 1100, railing: 1500
-} as const;
-
-const inchesToFeet = (n: number) => n / 12;
-const n = (v: string | number) => (typeof v === "number" ? v : parseFloat(v || "0"));
-
-/* ──────────────────────────────────────────────────────────────────────────────
-   OPTIONS (expand anytime — these won’t break layout)
-──────────────────────────────────────────────────────────────────────────────── */
+const BUILD_TYPES = [
+  "Dining Table",
+  "Coffee Table",
+  "Console Table",
+  "Desk",
+  "Bar Top",
+  "Countertop",
+  "Floating Shelves",
+  "Wall Panel",
+  "Resonance Lighting",
+  "Entertainment Center",
+  "Bench",
+] as const;
 
 const WOODS = [
-  "Walnut","White Oak","Red Oak","Maple","Cherry","Ash","Hickory",
-  "Sapele","Mahogany","Teak","Cedar","Pine (select tight-grain)"
-] as const;
-
-const WOOD_MULTIPLIERS: Record<(typeof WOODS)[number], number> = {
-  Walnut: 1.25, "White Oak": 1.18, "Red Oak": 1.08, Maple: 1.12, Cherry: 1.12,
-  Ash: 1.05, Hickory: 1.10, Sapele: 1.18, Mahogany: 1.22, Teak: 1.35,
-  Cedar: 1.00, "Pine (select tight-grain)": 0.95,
-};
-
-const METALS = [
-  "Copper Accents","Brass Accents","Bronze Accents","Stainless Hardware","Blackened Steel"
-] as const;
-
-const CRYSTAL_OPTIONS = [
-  "Crystal Integration (discreet)","Crystal Integration (visible)"
-] as const;
-
-const RESIN_PATTERNS = [
-  "None","Straight Pour","River","Galaxy/Tone-Programmed","Marble-Blend"
+  // Premiums + common residential/commercial species
+  "Walnut",
+  "White Oak",
+  "Red Oak",
+  "Maple",
+  "Cherry",
+  "Hickory",
+  "Birch",
+  "Alder",
+  "Cedar",
+  "Pine (Select)",
+  "Poplar",
 ] as const;
 
 const EDGE_STYLES = [
-  "Live Edge","Straight","Chamfer","Roundover","Bevel"
+  "Straight",
+  "Live-edge",
+  "Chamfer",
+  "Radius",
+  "Waterfall Leg",
+] as const;
+
+const RESIN_PATTERNS = [
+  "None",
+  "River",
+  "Vein",
+  "Marble Swirl",
+  "Galaxy Mist",
+  "Geode Edge",
+  "Solid Tint",
 ] as const;
 
 const FINISH_TIERS = [
-  "Standard Shop Finish","Premium Hand-Rubbed","Ultra Protective"
+  "Shop Satin",
+  "Furniture Matte",
+  "High-Gloss Show",
+  "Food-safe Oil/Wax",
 ] as const;
 
-/* ──────────────────────────────────────────────────────────────────────────────
-   COMPONENT
-──────────────────────────────────────────────────────────────────────────────── */
+const CRYSTAL_LEVELS = [
+  "None",
+  "Subtle nodes",
+  "Moderate grid",
+  "Signature matrix",
+] as const;
 
-export default function CustomBuilderPage() {
-  const params = useSearchParams();
+// Metals/Add-ons (includes Copper & Gold options)
+type AddOn = {
+  key: string;
+  label: string;
+  kind: "flat" | "mult";
+  value: number; // dollars if flat, multiplier if mult
+};
 
-  // Build type
-  const [buildType, setBuildType] = useState<BuildKind>("table");
+const ADDONS: AddOn[] = [
+  // Copper-focused
+  { key: "copperInlayVeins", label: "Copper inlay veins", kind: "flat", value: 450 },
+  { key: "copperEdgeBand", label: "Hammered copper edge band", kind: "flat", value: 650 },
+  { key: "copperMeshReveal", label: "Copper mesh reveal (under resin)", kind: "flat", value: 380 },
+  { key: "copperBusGround", label: "Hidden copper bus & grounding strap", kind: "flat", value: 290 },
+  // Legs note (sold separately)
+  { key: "copperLegPackage", label: "Copper leg package (sold separately)", kind: "flat", value: 0 },
+  // Gold-focused
+  { key: "goldLeafInlay", label: "Gold leaf inlay accents", kind: "flat", value: 520 },
+  { key: "goldHardware", label: "Gold-tone hardware/fasteners", kind: "flat", value: 180 },
+  // Other metals (nice to have)
+  { key: "brassDetails", label: "Satin brass details", kind: "flat", value: 260 },
+  { key: "bronzeDetails", label: "Oil-rubbed bronze details", kind: "flat", value: 220 },
+  { key: "steelPowderBlack", label: "Steel hardware powder-coated black", kind: "flat", value: 160 },
+];
 
-  // Shared selections
-  const [selectedWood, setSelectedWood] = useState<(typeof WOODS)[number]>("Walnut");
-  const [edgeStyle, setEdgeStyle] = useState(EDGE_STYLES[0]);
-  const [finishTier, setFinishTier] = useState(FINISH_TIERS[1]);
+/* ========= PRICING ENGINE (adjusted upward) ========= */
 
-  const [resinPattern, setResinPattern] = useState(RESIN_PATTERNS[0]);
-  const [useResinRiver, setUseResinRiver] = useState(false);
+// Base $/sqft by wood tier
+const WOOD_RATE_PER_SQFT: Record<(typeof WOODS)[number], number> = {
+  Walnut: 125,
+  "White Oak": 110,
+  "Red Oak": 85,
+  Maple: 95,
+  Cherry: 105,
+  Hickory: 100,
+  Birch: 80,
+  Alder: 80,
+  Cedar: 75,
+  "Pine (Select)": 70,
+  Poplar: 78,
+};
 
-  const [hasSacredGeometry, setHasSacredGeometry] = useState(false);
-  const [hasCrystalWork, setHasCrystalWork] = useState(false);
-  const [hasHeavyMetal, setHasHeavyMetal] = useState(false);
+// Build type complexity multipliers
+const BUILD_MULT: Record<(typeof BUILD_TYPES)[number], number> = {
+  "Dining Table": 1.25,
+  "Coffee Table": 1.05,
+  "Console Table": 1.05,
+  Desk: 1.15,
+  "Bar Top": 1.2,
+  Countertop: 1.25,
+  "Floating Shelves": 0.75,
+  "Wall Panel": 0.85,
+  "Resonance Lighting": 1.35,
+  "Entertainment Center": 1.4,
+  Bench: 0.95,
+};
+
+// Feature complexity multipliers
+const COMPLEXITY = {
+  liveEdge: 1.10,
+  waterfall: 1.20,
+  resinRiver: 1.20,
+  sacredGeom: 1.18,
+  crystalFX: 1.15,
+  heavyMetal: 1.12,
+  lightingFX: 1.12,
+};
+
+// Finish bump (flat)
+const FINISH_FLAT: Record<(typeof FINISH_TIERS)[number], number> = {
+  "Shop Satin": 0,
+  "Furniture Matte": 140,
+  "High-Gloss Show": 420,
+  "Food-safe Oil/Wax": 90,
+};
+
+// Minimums per build type (keeps quotes realistic)
+const MINIMUMS: Partial<Record<(typeof BUILD_TYPES)[number], number>> = {
+  "Dining Table": 2500,
+  "Coffee Table": 1200,
+  Desk: 1800,
+  "Bar Top": 2200,
+  Countertop: 2500,
+  "Entertainment Center": 4000,
+  "Resonance Lighting": 900,
+};
+
+/* ========= UI HELPERS ========= */
+
+const SectionTitle = ({ children }: { children: React.ReactNode }) => (
+  <h3 className="text-xl md:text-2xl font-semibold text-[#E8C987] mt-10 mb-3">
+    {children}
+  </h3>
+);
+
+const FieldLabel = ({ children }: { children: React.ReactNode }) => (
+  <label className="block text-sm md:text-base font-medium text-neutral-200 mb-1">
+    {children}
+  </label>
+);
+
+const Select = (props: React.SelectHTMLAttributes<HTMLSelectElement>) => (
+  <select
+    {...props}
+    className={`w-full bg-black/60 border border-[#E8C987]/40 text-neutral-100 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#E8C987] ${props.className ?? ""}`}
+  />
+);
+
+const NumberInput = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
+  <input
+    type="number"
+    inputMode="numeric"
+    {...props}
+    className={`w-full bg-black/60 border border-[#E8C987]/40 text-neutral-100 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#E8C987] ${props.className ?? ""}`}
+  />
+);
+
+const Checkbox = ({
+  label,
+  checked,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: () => void;
+  disabled?: boolean;
+}) => (
+  <label className={`flex items-center gap-3 text-sm md:text-base ${disabled ? "opacity-60" : ""}`}>
+    <input
+      type="checkbox"
+      className="size-4 accent-[#E8C987]"
+      checked={checked}
+      onChange={onChange}
+      disabled={disabled}
+    />
+    <span className="text-neutral-200">{label}</span>
+  </label>
+);
+
+/* ========= PAGE ========= */
+
+export default function CustomConfigurator() {
+  // Typed unions from readonly tuples
+  const [buildType, setBuildType] = useState<(typeof BUILD_TYPES)[number]>("Dining Table");
+  const [wood, setWood] = useState<(typeof WOODS)[number]>("Walnut");
+  const [edgeStyle, setEdgeStyle] = useState<(typeof EDGE_STYLES)[number]>("Straight");
+
+  const [resinPattern, setResinPattern] =
+    useState<(typeof RESIN_PATTERNS)[number]>(RESIN_PATTERNS[0]);
+
+  const [finishTier, setFinishTier] =
+    useState<(typeof FINISH_TIERS)[number]>("Furniture Matte");
+
+  const [crystalLevel, setCrystalLevel] =
+    useState<(typeof CRYSTAL_LEVELS)[number]>("None");
+
+  // Dimensions (inches)
+  const [length, setLength] = useState(72); // default 6ft
+  const [width, setWidth] = useState(36);
+  const [thickness, setThickness] = useState(1.75);
+
+  // Feature toggles
+  const [includeSacredGeometry, setIncludeSacredGeometry] = useState(false);
   const [includeLightingFX, setIncludeLightingFX] = useState(false);
 
-  // Dimensions (tables/panels/lighting/fixture by sqft)
-  const [lengthIn, setLengthIn] = useState("72");
-  const [widthIn, setWidthIn]   = useState("36");
-  const [thicknessIn, setThicknessIn] = useState("1.5");
+  // Metals / add-ons
+  const [selectedAddOns, setSelectedAddOns] = useState<Record<string, boolean>>(
+    Object.fromEntries(ADDONS.map(a => [a.key, false]))
+  );
 
-  // Shelves (LF)
-  const [shelfLenIn, setShelfLenIn]   = useState("72");
-  const [shelfDepthIn, setShelfDepthIn] = useState("12");
-  const [shelfCount, setShelfCount]   = useState("2");
+  // Price calculation
+  const quote = useMemo(() => {
+    // base by area
+    const sqft = Math.max(1, Math.round((length * width) / 144));
+    let base = sqft * (WOOD_RATE_PER_SQFT[wood] ?? 90);
 
-  // Trim (LF)
-  const [lf, setLf] = useState("40");
-  const [profile, setProfile] = useState<"simple"|"detailed"|"signature">("detailed");
+    // build type
+    base *= BUILD_MULT[buildType] ?? 1;
 
-  // Casework (cubic ft)
-  const [caseWIn, setCaseWIn] = useState("84");
-  const [caseHIn, setCaseHIn] = useState("32");
-  const [caseDIn, setCaseDIn] = useState("20");
+    // edge complexity
+    if (edgeStyle === "Live-edge") base *= COMPLEXITY.liveEdge;
+    if (edgeStyle === "Waterfall Leg") base *= COMPLEXITY.waterfall;
 
-  // Legs note (for table/shelf/railing)
-  const showsLegsNote = ["table","shelf","railing"].includes(buildType);
+    // resin complexity
+    const useResinRiver = resinPattern === "River";
+    if (useResinRiver) base *= COMPLEXITY.resinRiver;
 
-  // Deep-link support: /custom?type=panel
-  useEffect(() => {
-    const t = (params.get("type") || "").toLowerCase() as BuildKind;
-    if (BUILD_TYPES.some(b => b.id === t)) setBuildType(t);
-  }, [params]);
-
-  const woodMult = WOOD_MULTIPLIERS[selectedWood] ?? 1.0;
-
-  const estPrice = useMemo(() => {
-    // areas & conversions
-    const lengthFt = inchesToFeet(n(lengthIn));
-    const widthFt  = inchesToFeet(n(widthIn));
-    const areaSqFt = Math.max(0, lengthFt * widthFt);
-    const tIn      = n(thicknessIn);
-
-    const shelfLenFt   = inchesToFeet(n(shelfLenIn));
-    const shelfDepthFt = inchesToFeet(n(shelfDepthIn));
-    const shelves      = Math.max(1, Math.floor(n(shelfCount) || 1));
-
-    const linearFeet = Math.max(0, n(lf));
-
-    const caseWft = inchesToFeet(n(caseWIn));
-    const caseHft = inchesToFeet(n(caseHIn));
-    const caseDft = inchesToFeet(n(caseDIn));
-    const cubicFt = Math.max(0, caseWft * caseHft * caseDft);
-
-    let base = 0;
-    switch (buildType) {
-      case "table":
-        base = areaSqFt * BASE_RATES.table;
-        break;
-      case "panel":
-        base = areaSqFt * BASE_RATES.panel;
-        break;
-      case "lighting":
-        base = areaSqFt * BASE_RATES.lighting;
-        break;
-      case "fixture":
-        base = Math.max(1, areaSqFt) * BASE_RATES.fixture;
-        break;
-      case "shelf":
-        base = shelfLenFt * BASE_RATES.shelf * shelves * Math.max(1, shelfDepthFt / 1.0);
-        break;
-      case "trim":
-        {
-          const pf = profile === "signature" ? 1.35 : profile === "detailed" ? 1.2 : 1.0;
-          base = linearFeet * BASE_RATES.trim * pf;
-        }
-        break;
-      case "entertainment":
-        base = Math.max(10, cubicFt) * BASE_RATES.entertainment;
-        break;
-      case "railing":
-        base = linearFeet * BASE_RATES.railing;
-        break;
+    // sacred geometry / lighting
+    if (includeSacredGeometry) base *= COMPLEXITY.sacredGeom;
+    if (buildType === "Resonance Lighting" && includeLightingFX) {
+      base *= COMPLEXITY.lightingFX;
     }
 
-    // wood species
-    base *= woodMult;
+    // crystals
+    if (crystalLevel === "Subtle nodes") base *= 1.06;
+    if (crystalLevel === "Moderate grid") base *= 1.10;
+    if (crystalLevel === "Signature matrix") base *= 1.18;
 
-    // features
-    if (hasSacredGeometry) base *= COMPLEXITY.sacredGeom;
-    if (useResinRiver || resinPattern === "River") base *= COMPLEXITY.resinRiver;
-    if (hasCrystalWork)    base *= COMPLEXITY.crystalFX;
-    if (hasHeavyMetal)     base *= COMPLEXITY.heavyMetal;
-    if (buildType === "lighting" && includeLightingFX) base *= COMPLEXITY.lightingFX;
-
-    // thickness premium for table/panel > 1.5"
-    if (["table","panel"].includes(buildType) && tIn > 1.5) {
-      base *= 1.08 + (Math.min(tIn, 3) - 1.5) * 0.04;
+    // thickness premium (beyond 1.5")
+    if (thickness > 1.5) {
+      base *= 1 + Math.min(0.35, (thickness - 1.5) * 0.18);
     }
 
-    // finish tier
-    if (finishTier === "Premium Hand-Rubbed") base *= 1.08;
-    if (finishTier === "Ultra Protective")     base *= 1.15;
+    // finish flat
+    base += FINISH_FLAT[finishTier] ?? 0;
 
-    // shop minimum
-    const min = MINIMUMS[buildType];
-    return Math.max(base, min);
+    // add-ons
+    for (const a of ADDONS) {
+      if (!selectedAddOns[a.key]) continue;
+      if (a.kind === "flat") base += a.value;
+      else base *= a.value;
+    }
+
+    // minimums for big builds
+    const min = MINIMUMS[buildType] ?? 0;
+    if (base < min) base = min;
+
+    // margin buffer
+    const total = Math.round(base * 1.06); // small buffer
+
+    return {
+      sqft,
+      total,
+    };
   }, [
-    buildType,lengthIn,widthIn,thicknessIn,
-    shelfLenIn,shelfDepthIn,shelfCount,
-    lf,profile,
-    caseWIn,caseHIn,caseDIn,
-    woodMult,resinPattern,useResinRiver,
-    hasSacredGeometry,hasCrystalWork,hasHeavyMetal,
-    includeLightingFX,finishTier
+    buildType,
+    wood,
+    width,
+    length,
+    thickness,
+    edgeStyle,
+    resinPattern,
+    finishTier,
+    includeSacredGeometry,
+    includeLightingFX,
+    crystalLevel,
+    selectedAddOns,
   ]);
 
-  const formatted = (v: number) =>
-    v.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
-
-  // share/save helpers
-  const copyShareLink = () => {
-    try {
-      const url = new URL(window.location.href);
-      url.searchParams.set("type", buildType);
-      navigator.clipboard.writeText(url.toString());
-      alert("Shareable link copied.");
-    } catch { /* noop */ }
-  };
-
-  const saveQuote = () => {
-    const payload = {
-      buildType, selectedWood, edgeStyle, finishTier, resinPattern,
-      useResinRiver, hasSacredGeometry, hasCrystalWork, hasHeavyMetal, includeLightingFX,
-      dims: { lengthIn, widthIn, thicknessIn, shelfLenIn, shelfDepthIn, shelfCount, lf, profile, caseWIn, caseHIn, caseDIn },
-      estimate: Math.round(estPrice),
-      ts: Date.now(),
-    };
-    try {
-      const key = `strion-quote-${payload.ts}`;
-      localStorage.setItem(key, JSON.stringify(payload));
-      alert("Configuration saved locally.");
-    } catch { /* noop */ }
-  };
-
-  /* ────────────────────────────────────────────────────────────────────────── */
+  // Simple “status line” describing configuration (can also drive a preview image key)
+  const configKey = useMemo(() => {
+    const bits = [
+      buildType,
+      wood,
+      edgeStyle,
+      resinPattern !== "None" ? `Resin-${resinPattern}` : "",
+      includeSacredGeometry ? "SacredGeo" : "",
+      crystalLevel !== "None" ? `Crystals-${crystalLevel}` : "",
+      Object.entries(selectedAddOns).some(([, v]) => v) ? "Metals" : "",
+    ].filter(Boolean);
+    return bits.join("_");
+  }, [
+    buildType,
+    wood,
+    edgeStyle,
+    resinPattern,
+    includeSacredGeometry,
+    crystalLevel,
+    selectedAddOns,
+  ]);
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      <div className="mx-auto w-full max-w-6xl px-4 py-10">
-        {/* Crumbs */}
-        <div className="flex flex-wrap items-center gap-2 text-sm text-[#E8C987]/80">
-          <Link href="/" className="underline underline-offset-4 hover:text-[#E8C987]">Home</Link>
-          <span>›</span>
-          <span>Custom</span>
-        </div>
+    <main className="min-h-screen bg-black text-white px-4 md:px-6 py-10">
+      <div className="max-w-6xl mx-auto">
+        {/* Heading */}
+        <header className="mb-8">
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-[#E8C987]">
+            Build Your Custom Piece
+          </h1>
+          <p className="mt-3 text-neutral-300">
+            Tables, panels, lighting, shelving, bars & more — engineered to your dimensions,
+            materials, and energetic intent. <span className="text-[#E8C987]">Legs are arranged and sold separately</span> to reflect real-time availability.
+          </p>
+        </header>
 
-        {/* Title */}
-        <h1 className="mt-4 text-3xl md:text-4xl font-bold tracking-tight text-[#E8C987]">
-          Build Your Piece
-        </h1>
-        <p className="mt-2 text-sm text-neutral-300">
-          Tables, panels, shelves, trim, fixtures, entertainment centers, lighting, railings — precision engineered with sacred geometry, premium woods, metals, and crystal integration. Ships nationwide.
-        </p>
-
-        {/* Build Type Selector */}
-        <section className="mt-8">
-          <label className="block text-sm font-semibold tracking-wide text-[#E8C987] mb-2">
-            Build Type
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {BUILD_TYPES.map(bt => {
-              const active = buildType === bt.id;
-              return (
-                <button
-                  key={bt.id}
-                  type="button"
-                  onClick={() => setBuildType(bt.id)}
-                  className={[
-                    "px-3 py-2 rounded-md border transition",
-                    active
-                      ? "bg-[#E8C987] text-black border-[#E8C987]"
-                      : "border-[#E8C987]/40 text-[#E8C987] hover:bg-[#E8C987]/10"
-                  ].join(" ")}
+        {/* Grid: Config (left) + Quote & Preview (right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* LEFT: Form */}
+          <div className="space-y-6">
+            <SectionTitle>Core</SectionTitle>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <FieldLabel>Build Type</FieldLabel>
+                <Select
+                  value={buildType}
+                  onChange={(e) => setBuildType(e.target.value as (typeof BUILD_TYPES)[number])}
                 >
-                  {bt.label}
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* TWO-COLUMN LAYOUT */}
-        <div className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* LEFT: Inputs */}
-          <div className="lg:col-span-2 space-y-8">
-
-            {/* Dimensions by Type */}
-            <section>
-              <h2 className="text-xl font-semibold text-[#E8C987]">Dimensions</h2>
-
-              {["table","panel","lighting","fixture"].includes(buildType) && (
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Field label="Length (in)">
-                    <Input value={lengthIn} onChange={setLengthIn} />
-                  </Field>
-                  <Field label="Width (in)">
-                    <Input value={widthIn} onChange={setWidthIn} />
-                  </Field>
-                  <Field label="Thickness (in)">
-                    <Input value={thicknessIn} onChange={setThicknessIn} />
-                  </Field>
-                </div>
-              )}
-
-              {buildType === "shelf" && (
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Field label="Shelf Length (in)">
-                    <Input value={shelfLenIn} onChange={setShelfLenIn} />
-                  </Field>
-                  <Field label="Depth (in)">
-                    <Input value={shelfDepthIn} onChange={setShelfDepthIn} />
-                  </Field>
-                  <Field label="# of Shelves">
-                    <Input value={shelfCount} onChange={setShelfCount} />
-                  </Field>
-                </div>
-              )}
-
-              {buildType === "trim" && (
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Field label="Linear Feet">
-                    <Input value={lf} onChange={setLf} />
-                  </Field>
-                  <Field label="Profile Complexity">
-                    <Select value={profile} onChange={v => setProfile(v as typeof profile)} options={[
-                      { value: "simple", label: "Simple" },
-                      { value: "detailed", label: "Detailed" },
-                      { value: "signature", label: "Signature (sacred geometry)" },
-                    ]}/>
-                  </Field>
-                </div>
-              )}
-
-              {buildType === "entertainment" && (
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Field label="Width (in)">
-                    <Input value={caseWIn} onChange={setCaseWIn} />
-                  </Field>
-                  <Field label="Height (in)">
-                    <Input value={caseHIn} onChange={setCaseHIn} />
-                  </Field>
-                  <Field label="Depth (in)">
-                    <Input value={caseDIn} onChange={setCaseDIn} />
-                  </Field>
-                </div>
-              )}
-            </section>
-
-            {/* Materials */}
-            <section>
-              <h2 className="text-xl font-semibold text-[#E8C987]">Materials & Detailing</h2>
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Field label="Wood Species">
-                  <Select value={selectedWood} onChange={v => setSelectedWood(v as (typeof WOODS)[number])}
-                    options={WOODS.map(w => ({ value: w, label: w }))} />
-                </Field>
-                <Field label="Edge Style">
-                  <Select value={edgeStyle} onChange={v => setEdgeStyle(v)} options={EDGE_STYLES.map(e => ({ value: e, label: e }))} />
-                </Field>
-                <Field label="Finish">
-                  <Select value={finishTier} onChange={v => setFinishTier(v)} options={FINISH_TIERS.map(f => ({ value: f, label: f }))} />
-                </Field>
+                  {BUILD_TYPES.map(b => <option key={b} value={b}>{b}</option>)}
+                </Select>
               </div>
-
-              {/* Resin / Sacred Geometry */}
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Field label="Resin Pattern">
-                  <Select value={resinPattern} onChange={v => setResinPattern(v)} options={RESIN_PATTERNS.map(r => ({ value: r, label: r }))} />
-                </Field>
-                <Toggle label="River / Advanced Resin" checked={useResinRiver} onChange={setUseResinRiver} />
-                <Toggle label="Sacred Geometry Detailing" checked={hasSacredGeometry} onChange={setHasSacredGeometry} />
+              <div>
+                <FieldLabel>Wood Species</FieldLabel>
+                <Select
+                  value={wood}
+                  onChange={(e) => setWood(e.target.value as (typeof WOODS)[number])}
+                >
+                  {WOODS.map(w => <option key={w} value={w}>{w}</option>)}
+                </Select>
               </div>
-
-              {/* Metals / Crystals / Lighting */}
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Toggle label="Premium Metal Accents (copper / brass / bronze)" checked={hasHeavyMetal} onChange={setHasHeavyMetal} />
-                <Toggle label="Crystal Integration (discreet/visible)" checked={hasCrystalWork} onChange={setHasCrystalWork} />
-                {buildType === "lighting" && (
-                  <Toggle label="Enhanced Lighting FX / Tuning" checked={includeLightingFX} onChange={setIncludeLightingFX} />
-                )}
+              <div>
+                <FieldLabel>Edge Style</FieldLabel>
+                <Select
+                  value={edgeStyle}
+                  onChange={(e) => setEdgeStyle(e.target.value as (typeof EDGE_STYLES)[number])}
+                >
+                  {EDGE_STYLES.map(s => <option key={s} value={s}>{s}</option>)}
+                </Select>
               </div>
-            </section>
+              <div>
+                <FieldLabel>Finish</FieldLabel>
+                <Select
+                  value={finishTier}
+                  onChange={(e) => setFinishTier(e.target.value as (typeof FINISH_TIERS)[number])}
+                >
+                  {FINISH_TIERS.map(f => <option key={f} value={f}>{f}</option>)}
+                </Select>
+              </div>
+            </div>
 
-            {/* Notes */}
-            {showsLegsNote && (
-              <p className="text-xs text-neutral-400">
-                *Legs and certain hardware are <span className="text-[#E8C987]">sold and arranged separately</span>. Availability changes frequently — we’ll confirm best match during consult.
-              </p>
-            )}
+            <SectionTitle>Dimensions</SectionTitle>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <FieldLabel>Length (in)</FieldLabel>
+                <NumberInput
+                  value={length}
+                  min={18}
+                  max={180}
+                  onChange={(e) => setLength(parseInt(e.target.value || "0", 10))}
+                />
+              </div>
+              <div>
+                <FieldLabel>Width (in)</FieldLabel>
+                <NumberInput
+                  value={width}
+                  min={12}
+                  max={60}
+                  onChange={(e) => setWidth(parseInt(e.target.value || "0", 10))}
+                />
+              </div>
+              <div>
+                <FieldLabel>Thickness (in)</FieldLabel>
+                <NumberInput
+                  step="0.25"
+                  value={thickness}
+                  min={1}
+                  max={3}
+                  onChange={(e) => setThickness(parseFloat(e.target.value || "0"))}
+                />
+              </div>
+            </div>
+
+            <SectionTitle>Resin & Energetics</SectionTitle>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <FieldLabel>Resin Pattern</FieldLabel>
+                <Select
+                  value={resinPattern}
+                  onChange={(e) => setResinPattern(e.target.value as (typeof RESIN_PATTERNS)[number])}
+                >
+                  {RESIN_PATTERNS.map(r => <option key={r} value={r}>{r}</option>)}
+                </Select>
+              </div>
+              <div>
+                <FieldLabel>Crystals</FieldLabel>
+                <Select
+                  value={crystalLevel}
+                  onChange={(e) => setCrystalLevel(e.target.value as (typeof CRYSTAL_LEVELS)[number])}
+                >
+                  {CRYSTAL_LEVELS.map(c => <option key={c} value={c}>{c}</option>)}
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Checkbox
+                label="Include sacred geometry programming"
+                checked={includeSacredGeometry}
+                onChange={() => setIncludeSacredGeometry(v => !v)}
+              />
+              <Checkbox
+                label="Include resonance lighting effects"
+                checked={includeLightingFX}
+                onChange={() => setIncludeLightingFX(v => !v)}
+              />
+            </div>
+
+            <SectionTitle>Metals & Accents</SectionTitle>
+            <p className="text-sm text-neutral-400 mb-3">
+              Copper and gold options below are popular for energetic conduction and luxury detailing.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {ADDONS.map(a => (
+                <Checkbox
+                  key={a.key}
+                  label={`${a.label}${a.value ? (a.kind === "flat" ? ` (+$${a.value})` : ` (×${a.value})`) : ""}`}
+                  checked={!!selectedAddOns[a.key]}
+                  onChange={() =>
+                    setSelectedAddOns(prev => ({ ...prev, [a.key]: !prev[a.key] }))
+                  }
+                />
+              ))}
+            </div>
+
+            <p className="text-xs text-neutral-400 mt-3">
+              * Legs are always arranged and sold separately (availability varies). Copper leg package line above is informational only.
+            </p>
           </div>
 
-          {/* RIGHT: Summary */}
-          <aside className="lg:col-span-1">
-            <div className="sticky top-6 rounded-xl border border-[#E8C987]/30 bg-black/40 p-5">
-              <h3 className="text-lg font-semibold text-[#E8C987]">Estimate</h3>
-              <div className="mt-3 text-4xl font-bold tracking-tight text-[#E8C987]">
-                {formatted(estPrice)}
+          {/* RIGHT: Quote + “Preview” */}
+          <aside className="bg-[#0b0b0b] border border-[#E8C987]/30 rounded-xl p-5 h-fit sticky top-6">
+            <h3 className="text-2xl font-semibold text-[#E8C987]">Instant Quote</h3>
+            <div className="mt-3 space-y-2 text-sm">
+              <div className="flex justify-between text-neutral-300">
+                <span>Build</span>
+                <span className="text-neutral-100">{buildType}</span>
               </div>
-              <p className="mt-2 text-xs text-neutral-400">
-                Final quote may adjust with design drawings, shop scheduling, freight, and install variables. This tool gives you a transparent preview.
-              </p>
+              <div className="flex justify-between text-neutral-300">
+                <span>Wood</span>
+                <span className="text-neutral-100">{wood}</span>
+              </div>
+              <div className="flex justify-between text-neutral-300">
+                <span>Size</span>
+                <span className="text-neutral-100">
+                  {length}" × {width}" × {thickness}" ({quote.sqft} sqft)
+                </span>
+              </div>
+              <div className="flex justify-between text-neutral-300">
+                <span>Finish</span>
+                <span className="text-neutral-100">{finishTier}</span>
+              </div>
+              <div className="flex justify-between text-neutral-300">
+                <span>Edge</span>
+                <span className="text-neutral-100">{edgeStyle}</span>
+              </div>
+              {resinPattern !== "None" && (
+                <div className="flex justify-between text-neutral-300">
+                  <span>Resin</span>
+                  <span className="text-neutral-100">{resinPattern}</span>
+                </div>
+              )}
+              {Object.values(selectedAddOns).some(Boolean) && (
+                <div className="text-neutral-300">
+                  <span>Metals/Add-ons:</span>
+                  <ul className="list-disc ml-5 mt-1 text-neutral-100">
+                    {ADDONS.filter(a => selectedAddOns[a.key]).map(a => (
+                      <li key={a.key}>{a.label}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
 
-              <div className="mt-4 h-px w-full bg-[#E8C987]/20" />
+            <div className="mt-6 border-t border-white/10 pt-4">
+              <div className="text-neutral-400 text-sm">Estimated total</div>
+              <div className="text-4xl font-bold text-white tracking-tight">
+                ${quote.total.toLocaleString()}
+              </div>
+              <div className="text-xs text-neutral-500 mt-1">
+                Freight, legs, installation, and on-site fitting are quoted separately.
+              </div>
 
-              <ul className="mt-4 space-y-1 text-sm text-neutral-300">
-                <li>Type: <span className="text-[#E8C987]">{BUILD_TYPES.find(b => b.id === buildType)?.label}</span></li>
-                <li>Wood: <span className="text-[#E8C987]">{selectedWood}</span></li>
-                <li>Finish: <span className="text-[#E8C987]">{finishTier}</span></li>
-                {["table","panel","lighting","fixture"].includes(buildType) && (
-                  <li>Size: <span className="text-[#E8C987]">{lengthIn}" × {widthIn}" × {thicknessIn}"</span></li>
-                )}
-                {buildType === "shelf" && (
-                  <li>Shelves: <span className="text-[#E8C987]">{shelfCount} @ {shelfLenIn}" × {shelfDepthIn}"</span></li>
-                )}
-                {buildType === "trim" && (
-                  <li>Trim: <span className="text-[#E8C987]">{lf} LF • {profile}</span></li>
-                )}
-                {buildType === "entertainment" && (
-                  <li>Casework: <span className="text-[#E8C987]">{caseWIn}" × {caseHIn}" × {caseDIn}"</span></li>
-                )}
-                {resinPattern !== "None" && <li>Resin: <span className="text-[#E8C987]">{resinPattern}</span></li>}
-                {hasSacredGeometry && <li>Detailing: <span className="text-[#E8C987]">Sacred geometry</span></li>}
-                {hasCrystalWork && <li>Integration: <span className="text-[#E8C987]">Crystal</span></li>}
-                {hasHeavyMetal && <li>Accents: <span className="text-[#E8C987]">Premium metal</span></li>}
-                {buildType === "lighting" && includeLightingFX && <li>Lighting FX: <span className="text-[#E8C987]">Enhanced</span></li>}
-              </ul>
+              <button
+                className="mt-6 w-full rounded-lg bg-[#E8C987] text-black font-semibold py-3 hover:opacity-90 transition"
+                onClick={() => {
+                  // This would normally push to /custom/submit with config payload
+                  const payload = {
+                    buildType,
+                    wood,
+                    edgeStyle,
+                    resinPattern,
+                    finishTier,
+                    crystalLevel,
+                    sacredGeometry: includeSacredGeometry,
+                    lightingFX: includeLightingFX,
+                    addOns: Object.entries(selectedAddOns)
+                      .filter(([, v]) => v)
+                      .map(([k]) => k),
+                    length,
+                    width,
+                    thickness,
+                    quote: quote.total,
+                    configKey,
+                  };
+                  alert(
+                    "Config captured. We’ll attach this to your inquiry form.\n\n" +
+                    JSON.stringify(payload, null, 2)
+                  );
+                }}
+              >
+                Save & Continue → Inquiry
+              </button>
 
-              <div className="mt-5 grid grid-cols-1 gap-3">
-                <button
-                  type="button"
-                  onClick={saveQuote}
-                  className="w-full rounded-lg bg-[#E8C987] px-4 py-3 text-black font-semibold hover:opacity-90 transition"
-                >
-                  Save Configuration
-                </button>
-                <button
-                  type="button"
-                  onClick={copyShareLink}
-                  className="w-full rounded-lg border border-[#E8C987] px-4 py-3 text-[#E8C987] font-semibold hover:bg-[#E8C987]/10 transition"
-                >
-                  Copy Share Link
-                </button>
-                <Link
-                  href="/about"
-                  className="text-center w-full rounded-lg border border-[#E8C987]/40 px-4 py-3 text-[#E8C987] font-semibold hover:bg-[#E8C987]/5 transition"
-                >
-                  Learn Our Method
-                </Link>
+              {/* “Preview” stub: shows a live-changing key you can use to drive images */}
+              <div className="mt-6 rounded-lg bg-black/40 border border-white/10 p-4">
+                <div className="text-sm text-neutral-400 mb-1">Preview profile key</div>
+                <code className="block text-xs text-neutral-200 break-words">
+                  {configKey}
+                </code>
+                <p className="text-xs text-neutral-500 mt-2">
+                  Use this key to swap a representative preview image (see note below).
+                </p>
               </div>
             </div>
           </aside>
         </div>
-
-        {/* CTA Footer */}
-        <div className="mt-12 rounded-xl border border-[#E8C987]/20 bg-black/40 p-5 text-sm text-neutral-300">
-          <p>
-            Ready to proceed? Submit this configuration with photos of your space and any inspiration. We’ll refine dimensions, provide drawings, and lock the quote with schedule & freight.
-          </p>
-        </div>
       </div>
     </main>
-  );
-}
-
-/* ──────────────────────────────────────────────────────────────────────────────
-   REUSABLE UI
-──────────────────────────────────────────────────────────────────────────────── */
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="block text-sm mb-1 text-neutral-300">{label}</span>
-      {children}
-    </label>
-  );
-}
-
-function Input({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  return (
-    <input
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      inputMode="decimal"
-      className="w-full bg-black/30 border border-[#E8C987]/30 rounded-md px-3 py-2 text-[#E8C987] placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-[#E8C987]"
-      placeholder="0"
-    />
-  );
-}
-
-function Select({
-  value,
-  onChange,
-  options,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  options: { value: string; label: string }[];
-}) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="w-full bg-black/30 border border-[#E8C987]/30 rounded-md px-3 py-2 text-[#E8C987] focus:outline-none focus:ring-1 focus:ring-[#E8C987]"
-    >
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>
-          {o.label}
-        </option>
-      ))}
-    </select>
-  );
-}
-
-function Toggle({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => onChange(!checked)}
-      className={[
-        "w-full text-left rounded-md border px-3 py-2 transition",
-        checked
-          ? "bg-[#E8C987] text-black border-[#E8C987]"
-          : "bg-black/30 border-[#E8C987]/30 text-[#E8C987] hover:bg-[#E8C987]/10",
-      ].join(" ")}
-    >
-      <span className="mr-2 inline-block h-2 w-2 rounded-full align-middle"
-        style={{ background: checked ? "#000" : "#E8C987" }} />
-      {label}
-    </button>
   );
 }
