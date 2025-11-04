@@ -1,21 +1,15 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Base Theme */
-:root {
-  color-scheme: dark;
-}
+:root { color-scheme: dark; }
 
-/* Typography & links */
 body {
   @apply bg-black text-neutral-100 antialiased;
 }
 
-a {
-  @apply text-[#E8C987] underline-offset-4 transition;
-}
+a { @apply text-brand-gold underline-offset-4 transition; }
+a:hover { @apply text-brand-goldDim; }
 
-a:hover {
-  @apply text-[#c7b170];
- 
