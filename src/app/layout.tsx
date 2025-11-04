@@ -1,17 +1,18 @@
-import type { Metadata } from "next";
 import "./globals.css";
+import type { Metadata } from "next";
+import Header from "@/components/Header";
 
 export const metadata: Metadata = {
-  title: "STRION — Custom Carpentry & Energetic Crafting™",
-  description:
-    "Heirloom-grade custom carpentry, live-edge & epoxy builds, sacred-geometry motifs, refined metals, and resonance lighting. Built in Georgia • Delivered nationwide.",
+  title: "STRION — Energetic Crafting",
+  description: "Custom carpentry • sacred geometry • resonance design.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-black text-neutral-100 antialiased">
-        {children}
+    <html lang="en" className="scroll-smooth">
+      <body>
+        <Header />
+        <div className="pt-16">{children}</div>
       </body>
     </html>
   );
