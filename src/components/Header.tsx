@@ -1,14 +1,15 @@
 "use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
-const links = [
+const linksPrimary = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/categories", label: "Categories" },
   { href: "/custom", label: "Custom" },
+];
+const linksSecondary = [
   { href: "/commercial", label: "Commercial" },
   { href: "/residential", label: "Residential" },
   { href: "/signature", label: "Signature" },
@@ -21,66 +22,88 @@ const links = [
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const [elevate, setElevate] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setElevate(window.scrollY > 10);
+    onScroll();
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-yellow-800/30 bg-black/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link href="/" className="flex items-center gap-3">
-          {/* circular gold logo */}
-          <div className="relative h-10 w-10 overflow-hidden rounded-full ring-1 ring-[#E8C987]">
-            <Image
-              src="/file_000000007a4461f59f24187f958711dc~2.png"
-              alt="STRION"
-              fill
-              className="object-contain"
-              priority
-            />
-          </div>
-          <span className="text-base font-semibold tracking-[0.25em] text-[#E8C987]">
-            STRION
-          </span>
-        </Link>
-
-        {/* desktop nav */}
-        <nav className="hidden items-center gap-7 text-sm md:flex">
-          {links.map((l) => (
-            <Link key={l.href} href={l.href} className="hover:text-[#E8C987]">
-              {l.label}
-            </Link>
-          ))}
-        </nav>
-
-        {/* CTA (desktop) */}
-        <div className="hidden md:block">
-          <Link
-            href="/custom"
-            className="rounded-md border border-[#E8C987] px-4 py-2 text-[#E8C987] transition hover:bg-[#E8C987] hover:text-black"
-          >
-            Start Your Design
+    <header
+      className={[
+        "fixed top-0 inset-x-0 z-50 transition-all",
+        "backdrop-blur-xl",
+        elevate ? "bg-black/70 shadow-gold" : "bg-black/30",
+      ].join(" ")}
+    >
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3 group">
+            <span className="relative h-8 w-8 rounded-full ring-1 ring-[#E8C987]/30 overflow-hidden glow-gold">
+              <Image
+                src="/file_000000007a4461f59f24187f958711dc~2.png"
+                alt="STRION"
+                fill
+                className="object-cover"
+                priority
+              />
+            </span>
+            <span className="text-lg tracking-[0.2em] font-semibold text-brand-gold group-hover:text-brand-goldDim transition">
+              STRION
+            </span>
           </Link>
-        </div>
 
-        {/* mobile menu button */}
-        <button
-          onClick={() => setOpen((s) => !s)}
-          className="rounded p-2 md:hidden"
-          aria-label="Toggle menu"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24">
-            <path fill="#E8C987" d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z" />
-          </svg>
-        </button>
+          <nav className="hidden lg:flex items-center gap-6">
+            {linksPrimary.map((l) => (
+              <Link key={l.href} href={l.href} className="nav-link">
+                {l.label}
+              </Link>
+            ))}
+            <div className="h-5 w-px bg-white/10 mx-2" />
+            {linksSecondary.map((l) => (
+              <Link key={l.href} href={l.href} className="nav-sub">
+                {l.label}
+              </Link>
+            ))}
+            <Link
+              href="/custom"
+              className="btn-gold ml-2 animate-goldPulse"
+            >
+              Start Your Design
+            </Link>
+          </nav>
+
+          <button
+            aria-label="Open menu"
+            onClick={() => setOpen((v) => !v)}
+            className="lg:hidden p-2 rounded-md ring-1 ring-white/10 hover:ring-white/20 transition"
+          >
+            <div className="space-y-1.5">
+              <span className={`block h-0.5 w-6 bg-[#E8C987] transition ${open ? "translate-y-2 rotate-45" : ""}`} />
+              <span className={`block h-0.5 w-6 bg-[#E8C987] transition ${open ? "opacity-0" : ""}`} />
+              <span className={`block h-0.5 w-6 bg-[#E8C987] transition ${open ? "-translate-y-2 -rotate-45" : ""}`} />
+            </div>
+          </button>
+        </div>
       </div>
 
-      {/* mobile dropdown */}
-      {open && (
-        <div className="grid gap-2 border-t border-yellow-800/20 bg-black p-3 md:hidden">
-          {links.map((l) => (
+      <div
+        className={[
+          "lg:hidden overflow-hidden transition-[max-height] duration-500",
+          open ? "max-h-[560px]" : "max-h-0",
+          "border-t border-white/10",
+        ].join(" ")}
+      >
+        <div className="px-4 py-4 space-y-2 bg-gradient-to-b from-black/80 to-black">
+          {[...linksPrimary, ...linksSecondary].map((l) => (
             <Link
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className="rounded px-2 py-2 hover:bg-white/5"
+              className="block py-2 nav-link"
             >
               {l.label}
             </Link>
@@ -88,12 +111,14 @@ export default function Header() {
           <Link
             href="/custom"
             onClick={() => setOpen(false)}
-            className="mt-1 rounded-md border border-[#E8C987] px-4 py-2 text-center text-[#E8C987] transition hover:bg-[#E8C987] hover:text-black"
+            className="mt-2 inline-flex btn-gold"
           >
             Start Your Design
           </Link>
         </div>
-      )}
+      </div>
+
+      <div className="pointer-events-none select-none h-[1px] w-full bg-goldLine" />
     </header>
   );
 }
