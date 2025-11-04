@@ -1,4 +1,10 @@
+/* Brand Utilities */
+@layer utilities {
+  .text-brand-gold    { color: #E8C987; }
+  .text-brand-goldDim { color: #D6B86B; }
+}
 
+/* Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,9 +13,13 @@
 :root { color-scheme: dark; }
 
 body {
-  @apply bg-black text-neutral-100 antialiased;
+  @apply bg-black text-neutral-100 antialias;
 }
 
-a { @apply text-brand-gold underline-offset-4 transition; }
-a:hover { @apply text-brand-goldDim; }
-
+/* Global link styling */
+a { 
+  @apply text-brand-gold underline-offset-4 transition;
+}
+a:hover { 
+  @apply text-brand-goldDim;
+}
