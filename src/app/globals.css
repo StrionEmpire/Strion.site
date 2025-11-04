@@ -22,3 +22,23 @@ a {
 a:hover {
   @apply text-brand-goldDim;
 }
+@layer utilities {
+  .nav-link { @apply text-neutral-200 hover:text-brand-goldDim transition; }
+  .nav-sub  { @apply text-neutral-400 hover:text-neutral-200 transition; }
+
+  .btn-gold {
+    @apply px-4 py-2 rounded-lg font-semibold text-black;
+    background: linear-gradient(180deg,#E8C987,#CFAF64);
+    box-shadow: 0 0 0 1px rgba(232,201,135,.25), 0 8px 24px rgba(232,201,135,.15);
+  }
+
+  .glow-gold { box-shadow: 0 0 22px rgba(232,201,135,.25), inset 0 0 10px rgba(232,201,135,.12); }
+  .shadow-gold { box-shadow: 0 6px 24px rgba(232,201,135,.12); }
+  .bg-goldLine { background: linear-gradient(90deg,transparent,rgba(232,201,135,.35),transparent); }
+
+  @keyframes goldPulse {
+    0%,100% { filter: drop-shadow(0 0 0 rgba(232,201,135,.0)); transform: translateY(0); }
+    50% { filter: drop-shadow(0 0 18px rgba(232,201,135,.35)); transform: translateY(-1px); }
+  }
+  .animate-goldPulse { animation: goldPulse 2.8s ease-in-out infinite; }
+}
