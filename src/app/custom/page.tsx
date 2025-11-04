@@ -540,4 +540,3 @@ export default function CustomConfigurator() {
     </main>
   );
 }
-```0
