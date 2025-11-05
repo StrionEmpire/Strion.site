@@ -86,13 +86,11 @@ export const CATEGORY_OPTIONS: Record<string, {
   "beds": { woods: WOODS, metals: METALS, finishes: FINISHES, sizeHints: "Size (Queen/King/etc.), headboard height" },
   "media": { woods: WOODS, metals: METALS, finishes: FINISHES, sizeHints: "Overall length/height, device bays" },
   "reception-desks": { woods: WOODS, metals: METALS, resin: ["None","Window Inlay","Marble Swirl"], finishes: FINISHES, crystals: CRYSTAL_MODES, sizeHints: "Overall footprint, front elevation" },
-};
 
-export function listCategories(): CatalogItem[] { return CATEGORIES; }
-export function getCategory(slug: string): CatalogItem | undefined {
-  return CATEGORIES.find(c => c.slug === slug);
-
-export function getCategory(slug: string) {
+  export function getCategory(slug: string) {
   return CATEGORIES.find(c => c.slug === slug);
 }
+
+export function listCategories() {
+  return CATEGORIES;
 }
