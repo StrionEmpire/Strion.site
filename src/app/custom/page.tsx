@@ -109,7 +109,7 @@ function Select<T extends string>({
   placeholder,
 }: {
   value: T;
-  onChange: (v: T) => void;
+  onChange: (v: any) => void;
   options: readonly T[];
   placeholder?: string;
 }) {
