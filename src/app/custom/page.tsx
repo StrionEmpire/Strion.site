@@ -1,12 +1,104 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 
-/* ---------------------------
-   MASTER OPTION SETS
-----------------------------*/
+/** ---------- shared UI ---------- */
+function Label({ children }: { children: React.ReactNode }) {
+  return <div className="text-sm font-semibold text-neutral-300">{children}</div>;
+}
+function Field({ children }: { children: React.ReactNode }) {
+  return <div className="space-y-2">{children}</div>;
+}
+function Row({ children }: { children: React.ReactNode }) {
+  return <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{children}</div>;
+}
+function Box({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-neutral-800 bg-neutral-950/70 p-4">{children}</div>
+  );
+}
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return <h2 className="text-xl font-bold text-[#E8C987]">{children}</h2>;
+}
+function Select<T extends string>({
+  value,
+  onChange,
+  options,
+  placeholder,
+}: {
+  value: T;
+  onChange: (v: any) => void; // TS-easy for Android edits
+  options: readonly T[];
+  placeholder?: string;
+}) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full rounded-lg bg-black/50 border border-neutral-800 text-neutral-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#E8C987]"
+    >
+      {placeholder && <option value="">{placeholder}</option>}
+      {options.map((o) => (
+        <option key={o} value={o}>
+          {o}
+        </option>
+      ))}
+    </select>
+  );
+}
+function Input({
+  value,
+  onChange,
+  type = "text",
+  min,
+  max,
+  step,
+  placeholder,
+}: {
+  value: string | number;
+  onChange: (v: string) => void;
+  type?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+  placeholder?: string;
+}) {
+  return (
+    <input
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      type={type}
+      min={min}
+      max={max}
+      step={step}
+      placeholder={placeholder}
+      className="w-full rounded-lg bg-black/50 border border-neutral-800 text-neutral-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#E8C987]"
+    />
+  );
+}
+function Toggle({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+}) {
+  return (
+    <label className="flex items-center gap-3">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="h-4 w-4 accent-[#E8C987]"
+      />
+      <span className="text-neutral-300">{label}</span>
+    </label>
+  );
+}
 
-// Build categories
+/** ---------- data ---------- */
 const BUILD_TYPES = [
   "Table",
   "Wall Panel",
@@ -18,628 +110,829 @@ const BUILD_TYPES = [
   "Counter / Bar Top",
 ] as const;
 
-// Table subtypes
-const TABLE_TYPES = [
-  "Live-Edge Slab",
-  "Live-Edge River",
-  "Bookmatched River",
-  "Classic Plank",
-  "Conference Table",
-  "Coffee Table",
-  "Console Table",
-  "Dining Table",
-  "Round Table",
-] as const;
-
-// Common + luxury woods (expanded)
 const WOODS = [
   "Walnut",
-  "Maple (Hard)",
   "White Oak",
   "Red Oak",
+  "Maple",
   "Cherry",
-  "Hickory",
   "Ash",
-  "Mahogany",
+  "Hickory",
   "Cedar",
-  "Pine (Select)",
-  "Poplar (Paint-Grade)",
-  "Teak (Premium)",
+  "Pine",
+  "Mahogany",
   "Sapele",
-  "Zebrawood (Premium)",
+  "Teak",
 ] as const;
 
-// Edges
-const EDGE_STYLES = ["Live Edge", "Straight", "Rounded", "Chamfered"] as const;
-
-// Resin patterns
-const RESIN_PATTERNS = ["None", "River", "Vein", "Smoky Swirl", "Galaxy", "Solid Tint"] as const;
-
-// Metals (bring back gold + copper variants and more)
 const METALS = [
+  "None",
   "Gold (24K Leaf Accents)",
   "Gold (18K Leaf Accents)",
   "Gold (Foil/Flake Inlay)",
   "Copper (Solid Bar Inlay)",
   "Copper (Rod / Piping Edge)",
   "Copper (Hammered Accents)",
-  "Brass (Inlay / Banding)",
-  "Bronze (Inlay / Banding)",
-  "Stainless Steel (Brushed)",
-  "Blackened Steel",
+  "Brass (Solid Band)",
+  "Bronze (Patinated)",
+  "Steel (Blackened)",
   "Aluminum (Brushed)",
 ] as const;
 
-// Allow "None" safely in TS:
-type MetalOption = "None" | (typeof METALS)[number];
-const METALS_WITH_NONE = ["None", ...METALS] as const;
+const CRYSTALS = [
+  "None",
+  "Selenite",
+  "Clear Quartz",
+  "Black Tourmaline",
+  "Amethyst",
+  "Citrine",
+  "Smoky Quartz",
+  "Rose Quartz",
+  "Custom (Specified Later)",
+] as const;
 
-// Finishes
-const FINISHES = ["Hardwax Oil (Matte)", "Polyurethane (Satin)", "Polyurethane (High Gloss)", "Natural Oil (Low Sheen)"] as const;
+const RESIN_PATTERNS = [
+  "None",
+  "River",
+  "Galaxy",
+  "Metallic Vein",
+  "Stone/Marble FX",
+  "Smoke/Negative Space",
+] as const;
 
-// Legs policy reminder
-const LEGS_POLICY = `Legs/stands are arranged and sold separately due to fluctuating availability. We’ll spec and quote them for you in the proposal.`;
+const EDGE_STYLES = ["Square", "Eased", "Chamfer", "Roundover", "Live Edge"] as const;
+const TABLE_TYPES = [
+  "Dining",
+  "Conference",
+  "Coffee",
+  "Console",
+  "Side / End",
+  "Live-Edge Slab",
+  "Epoxy River",
+] as const;
+const SHAPES = ["Rectangle", "Oval", "Round", "Square"] as const;
 
-// “Crystal work” (broad — doesn’t pin you to specific stones)
-const CRYSTAL_INTENSITY = ["None", "Light Accent", "Integrated Array", "Full Energetic Layout"] as const;
+const PANEL_PATTERNS = [
+  "Sacred Geometry Grid",
+  "Chevron",
+  "Slatted",
+  "Herringbone",
+  "Acoustic Diffuser",
+] as const;
 
-// Sacred geometry layer
-const SACRED_GEOM = ["None", "Subtle Pattern", "Primary Motif", "Signature Array"] as const;
+const SHELF_STYLES = ["Floating (Concealed)", "Bracketed Metal", "Thick Live Edge"] as const;
 
-// Lighting FX choices (only used when build type = Lighting)
-const LIGHTING_FX = ["None", "Warm Glow", "Cool Glow", "Dual-Zone", "Programmable"] as const;
+const CABINET_STYLES = [
+  "Flat Panel",
+  "Shaker",
+  "Frame-and-Panel",
+  "Glass Front",
+  "Custom Built-in",
+] as const;
 
-/* ---------------------------
-   SIMPLE SELECT & INPUT UI
-----------------------------*/
+const TRIM_STYLES = [
+  "Baseboard",
+  "Crown",
+  "Wainscoting",
+  "Door/Window Casing",
+  "Custom Profile",
+] as const;
 
-function FieldWrap({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-2">
-      <div className="text-sm font-semibold text-neutral-200">{label}</div>
-      {children}
-    </div>
-  );
+const LIGHTING_STYLES = [
+  "Pendant Cluster",
+  "Sconce Pair",
+  "Panel Backlight",
+  "Chandelier (Wood/Metal)",
+  "Selenite Rod Array",
+] as const;
+
+const LEG_NOTICE =
+  "Legs/bases are arranged and sold separately. Styles and availability change frequently.";
+
+/** ---------- helpers ---------- */
+function toNum(v: string | number) {
+  if (typeof v === "number") return v;
+  const n = parseFloat(v);
+  return Number.isFinite(n) ? n : 0;
 }
 
-function Select<T extends string>({
-  value,
-  onChange,
-  options,
-  placeholder,
+/** ---------- price model (tunable) ---------- */
+const BASE = {
+  Table: 18, // $/sq ft baseline for simple top
+  "Wall Panel": 12,
+  "Floating Shelves": 180, // per shelf baseline (L up to 36”)
+  Cabinetry: 250, // per linear ft
+  "Interior Trim / Moulding": 12, // per linear ft
+  Lighting: 450, // per fixture baseline
+  "Bench / Seating": 600, // per bench baseline
+  "Counter / Bar Top": 26, // $/sq ft
+} as const;
+
+const MULTIPLIER = {
+  premiumWood: 1.25, // walnut/teak/mahogany
+  liveEdge: 1.25,
+  resinRiver: 1.35,
+  resinFX: 1.2,
+  sacredGeom: 1.25,
+  crystalFX: 1.15,
+  heavyMetal: 1.25,
+  goldLeaf: 1.35,
+  complexShape: 1.1,
+  thickShelf: 1.2,
+  builtIn: 1.35,
+} as const;
+
+function isPremiumWood(w: string) {
+  return ["Walnut", "Teak", "Mahogany", "Sapele"].includes(w);
+}
+function isGold(m: string) {
+  return m.startsWith("Gold");
+}
+function hasHeavyMetal(m: string) {
+  return m !== "None";
+}
+
+/** ---------- preview renderer (SVG) ---------- */
+function Preview({
+  buildType,
+  width,
+  length,
+  depth,
+  wood,
+  metal,
+  resinPattern,
+  edgeStyle,
+  shape,
 }: {
-  value: T;
-  onChange: (v: any) => void;
-  options: readonly T[];
-  placeholder?: string;
+  buildType: string;
+  width: string;
+  length: string;
+  depth: string;
+  wood: string;
+  metal: string;
+  resinPattern: string;
+  edgeStyle: string;
+  shape: string;
 }) {
+  const { woodColor, metalColor, L, W, showRiver } = useMemo(() => {
+    const L = Math.min(680, Math.max(220, toNum(length) * 5));
+    const W = Math.min(440, Math.max(160, toNum(width) * 5));
+    const woodColor =
+      wood === "Walnut"
+        ? "#3b2a1f"
+        : wood === "White Oak"
+        ? "#c6b089"
+        : wood === "Red Oak"
+        ? "#b98e6d"
+        : wood === "Maple"
+        ? "#d9cdb6"
+        : wood === "Cherry"
+        ? "#b96f54"
+        : wood === "Ash"
+        ? "#cdbda2"
+        : wood === "Hickory"
+        ? "#a37e5a"
+        : wood === "Cedar"
+        ? "#b87a5b"
+        : wood === "Pine"
+        ? "#d9c18e"
+        : wood === "Mahogany"
+        ? "#7a3a2a"
+        : wood === "Sapele"
+        ? "#6f3a2a"
+        : wood === "Teak"
+        ? "#b38a57"
+        : "#b3a089";
+
+    const metalColor = metal.includes("Gold")
+      ? "#E8C987"
+      : metal.startsWith("Copper")
+      ? "#b87333"
+      : metal.startsWith("Brass")
+      ? "#b5a642"
+      : metal.startsWith("Bronze")
+      ? "#8c7853"
+      : metal.startsWith("Steel")
+      ? "#2e2e2e"
+      : metal.startsWith("Aluminum")
+      ? "#c0c0c0"
+      : "transparent";
+
+    const showRiver = resinPattern === "River";
+    return { woodColor, metalColor, L, W, showRiver };
+  }, [wood, metal, resinPattern, length, width]);
+
+  const borderR =
+    edgeStyle === "Roundover" ? 24 : edgeStyle === "Chamfer" ? 4 : edgeStyle === "Eased" ? 2 : 0;
+
+  const frame = (
+    <rect
+      x={30}
+      y={30}
+      width={L}
+      height={W}
+      rx={borderR}
+      ry={borderR}
+      fill={woodColor}
+      stroke={metal === "None" ? "#111" : metalColor}
+      strokeWidth={metal === "None" ? 2 : 6}
+    />
+  );
+
+  function river() {
+    if (!showRiver) return null;
+    const x = 30 + L / 2 - 18;
+    return <rect x={x} y={30} width={36} height={W} fill="#0b7480" opacity={0.55} />;
+  }
+
+  function shapeMask() {
+    if (shape === "Round") {
+      return (
+        <circle cx={30 + L / 2} cy={30 + W / 2} r={Math.min(L, W) / 2} fill={woodColor} />
+      );
+    }
+    if (shape === "Oval") {
+      return (
+        <ellipse
+          cx={30 + L / 2}
+          cy={30 + W / 2}
+          rx={L / 2}
+          ry={W / 2}
+          fill={woodColor}
+          stroke={metal === "None" ? "#111" : metalColor}
+          strokeWidth={metal === "None" ? 2 : 6}
+        />
+      );
+    }
+    if (shape === "Square") {
+      const s = Math.min(L, W);
+      return (
+        <rect
+          x={30 + (L - s) / 2}
+          y={30 + (W - s) / 2}
+          width={s}
+          height={s}
+          rx={borderR}
+          ry={borderR}
+          fill={woodColor}
+          stroke={metal === "None" ? "#111" : metalColor}
+          strokeWidth={metal === "None" ? 2 : 6}
+        />
+      );
+    }
+    return frame;
+  }
+
+  // different compositions by type
   return (
-    <select
-      className="w-full rounded-lg bg-neutral-900 border border-neutral-700 text-neutral-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#E8C987]"
-      value={value}
-      onChange={(e) => onChange(e.target.value as T)}
-    >
-      {placeholder && <option value="">{placeholder}</option>}
-      {options.map((o) => (
-        <option key={o} value={o}>
-          {o}
-        </option>
-      ))}
-    </select>
+    <svg viewBox="0 0 760 520" className="w-full h-auto rounded-xl bg-neutral-900">
+      <defs>
+        <linearGradient id="goldGlow" x1="0" x2="1">
+          <stop offset="0%" stopColor="rgba(232,201,135,0.0)" />
+          <stop offset="100%" stopColor="rgba(232,201,135,0.15)" />
+        </linearGradient>
+      </defs>
+
+      {buildType === "Table" || buildType === "Counter / Bar Top" ? (
+        <>
+          {shape === "Rectangle" ? frame : shapeMask()}
+          {river()}
+        </>
+      ) : null}
+
+      {buildType === "Wall Panel" ? (
+        <>
+          <rect x={60} y={40} width={L - 60} height={W - 60} fill={woodColor} rx={8} />
+          <g opacity={0.22}>
+            {/* simple sacred geometry grid */}
+            {Array.from({ length: 8 }).map((_, i) => (
+              <line
+                key={"v" + i}
+                x1={60 + i * ((L - 60) / 8)}
+                y1={40}
+                x2={60 + i * ((L - 60) / 8)}
+                y2={W - 20}
+                stroke="#fff"
+                strokeWidth={0.7}
+              />
+            ))}
+            {Array.from({ length: 6 }).map((_, i) => (
+              <line
+                key={"h" + i}
+                x1={60}
+                y1={40 + i * ((W - 60) / 6)}
+                x2={L}
+                y2={40 + i * ((W - 60) / 6)}
+                stroke="#fff"
+                strokeWidth={0.7}
+              />
+            ))}
+          </g>
+          {hasHeavyMetal(metal) && (
+            <rect x={60} y={40} width={L - 60} height={W - 60} fill="url(#goldGlow)" />
+          )}
+        </>
+      ) : null}
+
+      {buildType === "Floating Shelves" ? (
+        <>
+          <rect x={120} y={120} width={L - 180} height={24} rx={6} fill={woodColor} />
+          <rect x={120} y={200} width={L - 240} height={24} rx={6} fill={woodColor} />
+          <rect x={120} y={280} width={L - 210} height={24} rx={6} fill={woodColor} />
+          {hasHeavyMetal(metal) && (
+            <g opacity={0.6}>
+              <rect x={120} y={120} width={L - 180} height={2} fill={metalColor} />
+              <rect x={120} y={200} width={L - 240} height={2} fill={metalColor} />
+              <rect x={120} y={280} width={L - 210} height={2} fill={metalColor} />
+            </g>
+          )}
+        </>
+      ) : null}
+
+      {buildType === "Cabinetry" ? (
+        <>
+          <rect x={80} y={80} width={L - 140} height={W - 160} fill={woodColor} rx={6} />
+          <rect x={90} y={90} width={(L - 160) / 2} height={W - 180} fill="#00000022" />
+          <rect x={90 + (L - 160) / 2 + 20} y={90} width={(L - 200) / 2} height={W - 180} fill="#00000022" />
+          {hasHeavyMetal(metal) && (
+            <g>
+              <rect x={90} y={90} width={(L - 160) / 2} height={4} fill={metalColor} />
+              <rect x={90 + (L - 160) / 2 + 20} y={90} width={(L - 200) / 2} height={4} fill={metalColor} />
+            </g>
+          )}
+        </>
+      ) : null}
+
+      {buildType === "Interior Trim / Moulding" ? (
+        <>
+          <rect x={80} y={240} width={L - 120} height={18} fill={woodColor} />
+          <rect x={80} y={320} width={L - 180} height={14} fill={woodColor} />
+          <rect x={80} y={160} width={L - 200} height={22} fill={woodColor} />
+          {hasHeavyMetal(metal) && (
+            <rect x={80} y={238} width={L - 120} height={2} fill={metalColor} />
+          )}
+        </>
+      ) : null}
+
+      {buildType === "Lighting" ? (
+        <>
+          <rect x={80} y={60} width={L - 140} height={W - 160} fill="#0a0a0a" rx={10} />
+          <g opacity={0.2}>
+            <circle cx={120} cy={120} r={10} fill="#fff" />
+            <circle cx={160} cy={160} r={10} fill="#fff" />
+            <circle cx={200} cy={200} r={10} fill="#fff" />
+            <circle cx={240} cy={240} r={10} fill="#fff" />
+          </g>
+          {/* selenite rods feel */}
+          <g opacity={0.7}>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <rect
+                key={i}
+                x={100 + i * 34}
+                y={100}
+                width={10}
+                height={W - 200}
+                rx={4}
+                fill="#f7f7f7"
+              />
+            ))}
+          </g>
+          {hasHeavyMetal(metal) && (
+            <rect x={80} y={60} width={L - 140} height={W - 160} fill="url(#goldGlow)" />
+          )}
+        </>
+      ) : null}
+
+      {buildType === "Bench / Seating" ? (
+        <>
+          <rect x={60} y={220} width={L - 100} height={50} rx={8} fill={woodColor} />
+          {hasHeavyMetal(metal) && (
+            <>
+              <rect x={80} y={270} width={10} height={50} fill={metalColor} />
+              <rect x={L - 120} y={270} width={10} height={50} fill={metalColor} />
+            </>
+          )}
+        </>
+      ) : null}
+    </svg>
   );
 }
 
-function NumberField({
-  value,
-  onChange,
-  min = 0,
-  step = 1,
-  unit,
-}: {
-  value: number | string;
-  onChange: (n: number) => void;
-  min?: number;
-  step?: number;
-  unit?: string;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      <input
-        type="number"
-        className="w-full rounded-lg bg-neutral-900 border border-neutral-700 text-neutral-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#E8C987] [-moz-appearance:textfield]"
-        value={value}
-        min={min}
-        step={step}
-        onChange={(e) => onChange(Number(e.target.value))}
-      />
-      {unit && <span className="text-neutral-400 text-sm">{unit}</span>}
-    </div>
-  );
-}
-
-function Toggle({
-  checked,
-  onChange,
-  label,
-}: {
-  checked: boolean;
-  onChange: (b: boolean) => void;
-  label: string;
-}) {
-  return (
-    <label className="flex items-center gap-3 cursor-pointer">
-      <input
-        type="checkbox"
-        className="h-5 w-5 accent-[#E8C987]"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-      />
-      <span className="text-neutral-200">{label}</span>
-    </label>
-  );
-}
-
-/* ---------------------------
-   PRICING ENGINE
-----------------------------*/
-
-// Base by build type
-const BASE_BY_BUILD: Record<(typeof BUILD_TYPES)[number], number> = {
-  "Table": 900,
-  "Wall Panel": 600,
-  "Floating Shelves": 300,
-  "Cabinetry": 2500,
-  "Interior Trim / Moulding": 1200,
-  "Lighting": 750,
-  "Bench / Seating": 700,
-  "Counter / Bar Top": 1500,
-};
-
-// Table complexity bump
-const TABLE_COMPLEXITY: Record<(typeof TABLE_TYPES)[number], number> = {
-  "Live-Edge Slab": 1.15,
-  "Live-Edge River": 1.35,
-  "Bookmatched River": 1.45,
-  "Classic Plank": 1.0,
-  "Conference Table": 1.6,
-  "Coffee Table": 0.75,
-  "Console Table": 0.9,
-  "Dining Table": 1.25,
-  "Round Table": 1.1,
-};
-
-// Wood multipliers
-const WOOD_MULT: Record<(typeof WOODS)[number], number> = {
-  Walnut: 1.45,
-  "Maple (Hard)": 1.2,
-  "White Oak": 1.3,
-  "Red Oak": 1.15,
-  Cherry: 1.25,
-  Hickory: 1.25,
-  Ash: 1.15,
-  Mahogany: 1.35,
-  Cedar: 1.1,
-  "Pine (Select)": 0.9,
-  "Poplar (Paint-Grade)": 0.85,
-  "Teak (Premium)": 1.8,
-  Sapele: 1.35,
-  "Zebrawood (Premium)": 1.9,
-};
-
-// Resin complexity
-const RESIN_MULT: Record<(typeof RESIN_PATTERNS)[number], number> = {
-  None: 1.0,
-  River: 1.35,
-  Vein: 1.2,
-  "Smoky Swirl": 1.25,
-  Galaxy: 1.35,
-  "Solid Tint": 1.15,
-};
-
-// Metal complexity
-const METAL_MULT: Record<Exclude<MetalOption, "None">, number> = {
-  "Gold (24K Leaf Accents)": 1.6,
-  "Gold (18K Leaf Accents)": 1.45,
-  "Gold (Foil/Flake Inlay)": 1.35,
-  "Copper (Solid Bar Inlay)": 1.35,
-  "Copper (Rod / Piping Edge)": 1.25,
-  "Copper (Hammered Accents)": 1.25,
-  "Brass (Inlay / Banding)": 1.25,
-  "Bronze (Inlay / Banding)": 1.2,
-  "Stainless Steel (Brushed)": 1.15,
-  "Blackened Steel": 1.15,
-  "Aluminum (Brushed)": 1.1,
-};
-
-// Crystal intensity bump
-const CRYSTAL_MULT: Record<(typeof CRYSTAL_INTENSITY)[number], number> = {
-  None: 1.0,
-  "Light Accent": 1.08,
-  "Integrated Array": 1.18,
-  "Full Energetic Layout": 1.35,
-};
-
-// Sacred geometry bump
-const GEOM_MULT: Record<(typeof SACRED_GEOM)[number], number> = {
-  None: 1.0,
-  "Subtle Pattern": 1.08,
-  "Primary Motif": 1.18,
-  "Signature Array": 1.35,
-};
-
-// Finish bump
-const FINISH_MULT: Record<(typeof FINISHES)[number], number> = {
-  "Hardwax Oil (Matte)": 1.0,
-  "Polyurethane (Satin)": 1.05,
-  "Polyurethane (High Gloss)": 1.12,
-  "Natural Oil (Low Sheen)": 1.0,
-};
-
-// Lighting FX bump when build type is Lighting
-const LIGHTING_MULT: Record<(typeof LIGHTING_FX)[number], number> = {
-  None: 1.0,
-  "Warm Glow": 1.1,
-  "Cool Glow": 1.1,
-  "Dual-Zone": 1.2,
-  Programmable: 1.35,
-};
-
-function clamp(n: number, lo: number, hi: number) {
-  return Math.max(lo, Math.min(hi, n));
-}
-
-/* ---------------------------
-   PREVIEW COLOR HELPERS
-----------------------------*/
-
-function woodHex(wood: (typeof WOODS)[number]) {
-  const map: Partial<Record<(typeof WOODS)[number], string>> = {
-    Walnut: "#5b3a29",
-    "Maple (Hard)": "#e1cda7",
-    "White Oak": "#c8ad7f",
-    "Red Oak": "#b58563",
-    Cherry: "#b16a4a",
-    Hickory: "#b79b78",
-    Ash: "#cbbfa7",
-    Mahogany: "#7a3f2a",
-    Cedar: "#ad6d4a",
-    "Pine (Select)": "#e9d7a9",
-    "Poplar (Paint-Grade)": "#d6cfbf",
-    "Teak (Premium)": "#996f3b",
-    Sapele: "#8c5138",
-    "Zebrawood (Premium)": "#aa8a5c",
-  };
-  return map[wood] ?? "#bfa782";
-}
-
-function metalHex(metal: MetalOption) {
-  const map: Partial<Record<MetalOption, string>> = {
-    "None": "transparent",
-    "Gold (24K Leaf Accents)": "#d4af37",
-    "Gold (18K Leaf Accents)": "#c9a335",
-    "Gold (Foil/Flake Inlay)": "#bb9934",
-    "Copper (Solid Bar Inlay)": "#b87333",
-    "Copper (Rod / Piping Edge)": "#b87333",
-    "Copper (Hammered Accents)": "#b87333",
-    "Brass (Inlay / Banding)": "#b5a642",
-    "Bronze (Inlay / Banding)": "#8c7853",
-    "Stainless Steel (Brushed)": "#c0c0c0",
-    "Blackened Steel": "#2b2b2b",
-    "Aluminum (Brushed)": "#c7c7c7",
-  };
-  return map[metal] ?? "transparent";
-}
-
-/* ---------------------------
-   PAGE
-----------------------------*/
-
-export default function CustomConfiguratorPage() {
-  // Core selection
+/** ---------- main page ---------- */
+export default function Custom() {
+  // globals
   const [buildType, setBuildType] = useState<(typeof BUILD_TYPES)[number]>("Table");
-  const [tableType, setTableType] = useState<(typeof TABLE_TYPES)[number]>("Dining Table");
   const [wood, setWood] = useState<(typeof WOODS)[number]>("Walnut");
-  const [edgeStyle, setEdgeStyle] = useState<(typeof EDGE_STYLES)[number]>("Live Edge");
+  const [metal, setMetal] = useState<(typeof METALS)[number]>("None");
+  const [crystal, setCrystal] = useState<(typeof CRYSTALS)[number]>("None");
+
+  // tables + counters
+  const [tableType, setTableType] = useState<(typeof TABLE_TYPES)[number]>("Dining");
+  const [shape, setShape] = useState<(typeof SHAPES)[number]>("Rectangle");
+  const [edgeStyle, setEdgeStyle] = useState<(typeof EDGE_STYLES)[number]>("Eased");
   const [resinPattern, setResinPattern] = useState<(typeof RESIN_PATTERNS)[number]>("None");
-  const [metal, setMetal] = useState<MetalOption>("None");
-  const [finish, setFinish] = useState<(typeof FINISHES)[number]>("Hardwax Oil (Matte)");
-  const [crystal, setCrystal] = useState<(typeof CRYSTAL_INTENSITY)[number]>("None");
-  const [geom, setGeom] = useState<(typeof SACRED_GEOM)[number]>("None");
-  const [lightingFx, setLightingFx] = useState<(typeof LIGHTING_FX)[number]>("None");
 
-  // Dimensions
-  const [lengthIn, setLengthIn] = useState(72);
-  const [widthIn, setWidthIn] = useState(36);
-  const [thicknessIn, setThicknessIn] = useState(1.75);
+  // universal dims
+  const [length, setLength] = useState("72"); // in
+  const [width, setWidth] = useState("36"); // in
+  const [thickness, setThickness] = useState("1.5");
+  const [depth, setDepth] = useState("12"); // shelf/depth
 
-  // Options
-  const [includeDelivery, setIncludeDelivery] = useState(false);
-  const [rush, setRush] = useState(false);
+  // shelves
+  const [shelfStyle, setShelfStyle] = useState<(typeof SHELF_STYLES)[number]>("Floating (Concealed)");
+  const [shelfCount, setShelfCount] = useState("2");
 
-  // Price calculation
+  // cabinetry
+  const [cabinetStyle, setCabinetStyle] = useState<(typeof CABINET_STYLES)[number]>("Shaker");
+  const [linearFeet, setLinearFeet] = useState("8");
+
+  // trim
+  const [trimStyle, setTrimStyle] = useState<(typeof TRIM_STYLES)[number]>("Crown");
+  const [trimFeet, setTrimFeet] = useState("40");
+
+  // panels
+  const [panelPattern, setPanelPattern] =
+    useState<(typeof PANEL_PATTERNS)[number]>("Sacred Geometry Grid");
+
+  // lighting
+  const [lightingStyle, setLightingStyle] =
+    useState<(typeof LIGHTING_STYLES)[number]>("Selenite Rod Array");
+
+  // features
+  const [hasSacredGeometry, setHasSacredGeometry] = useState(true);
+  const [includeToneWork, setIncludeToneWork] = useState(true);
+
+  // price
   const price = useMemo(() => {
-    let base = BASE_BY_BUILD[buildType];
+    // area helpers
+    const L = toNum(length);
+    const W = toNum(width);
+    const D = toNum(depth);
+    const areaSqFt = Math.max(1, (L * W) / 144);
+    const runFt = Math.max(1, L / 12);
 
-    // If table, add subtype complexity
-    if (buildType === "Table") {
-      base *= TABLE_COMPLEXITY[tableType];
+    let p = 0;
+    switch (buildType) {
+      case "Table": {
+        p = areaSqFt * BASE.Table;
+        if (tableType === "Conference") p *= 1.25;
+        if (shape !== "Rectangle") p *= MULTIPLIER.complexShape;
+        if (edgeStyle === "Live Edge") p *= MULTIPLIER.liveEdge;
+        if (resinPattern === "River") p *= MULTIPLIER.resinRiver;
+        if (["Galaxy", "Metallic Vein", "Stone/Marble FX", "Smoke/Negative Space"].includes(resinPattern))
+          p *= MULTIPLIER.resinFX;
+        break;
+      }
+      case "Counter / Bar Top": {
+        p = areaSqFt * BASE["Counter / Bar Top"];
+        if (edgeStyle === "Live Edge") p *= MULTIPLIER.liveEdge;
+        break;
+      }
+      case "Wall Panel": {
+        p = areaSqFt * BASE["Wall Panel"];
+        if (panelPattern === "Sacred Geometry Grid") p *= MULTIPLIER.sacredGeom;
+        break;
+      }
+      case "Floating Shelves": {
+        const each = BASE["Floating Shelves"] * (D > 12 ? MULTIPLIER.thickShelf : 1);
+        p = each * Math.max(1, toNum(shelfCount));
+        if (shelfStyle === "Bracketed Metal" && hasHeavyMetal(metal)) p *= 1.1;
+        break;
+      }
+      case "Cabinetry": {
+        p = BASE.Cabinetry * Math.max(1, toNum(linearFeet));
+        if (cabinetStyle === "Custom Built-in") p *= MULTIPLIER.builtIn;
+        break;
+      }
+      case "Interior Trim / Moulding": {
+        p = BASE["Interior Trim / Moulding"] * Math.max(1, toNum(trimFeet));
+        if (trimStyle === "Custom Profile") p *= 1.25;
+        break;
+      }
+      case "Lighting": {
+        p = BASE.Lighting;
+        if (lightingStyle === "Selenite Rod Array") p *= 1.3;
+        break;
+      }
+      case "Bench / Seating": {
+        p = BASE["Bench / Seating"];
+        break;
+      }
     }
 
-    // Size influence (simple area factor against a nominal baseline)
-    const area = (lengthIn * widthIn) / 144; // sq ft
-    const sizeFactor = clamp(area / 12, 0.6, 2.2); // normalize vs ~12 sq ft
-    base *= sizeFactor;
+    // shared multipliers
+    if (isPremiumWood(wood)) p *= MULTIPLIER.premiumWood;
+    if (hasHeavyMetal(metal)) p *= MULTIPLIER.heavyMetal;
+    if (isGold(metal)) p *= MULTIPLIER.goldLeaf;
+    if (hasSacredGeometry) p *= MULTIPLIER.sacredGeom;
+    if (includeToneWork) p *= 1.06; // small uplift
 
-    // Material & features
-    base *= WOOD_MULT[wood];
-    base *= RESIN_MULT[resinPattern];
-    if (metal !== "None") base *= METAL_MULT[metal];
-    base *= CRYSTAL_MULT[crystal];
-    base *= GEOM_MULT[geom];
-    base *= FINISH_MULT[finish];
-
-    // Thickness bump
-    if (thicknessIn >= 2.25) base *= 1.18;
-    else if (thicknessIn >= 2.0) base *= 1.12;
-    else if (thicknessIn >= 1.75) base *= 1.06;
-
-    // Lighting builds can stack a FX bump
-    if (buildType === "Lighting") {
-      base *= LIGHTING_MULT[lightingFx];
+    // thickness influence for table/counter/panel
+    if (["Table", "Counter / Bar Top", "Wall Panel"].includes(buildType)) {
+      const t = Math.max(1, toNum(thickness));
+      p *= 0.85 + t * 0.15;
     }
 
-    // Add delivery/rush surcharges (simple flat multipliers)
-    if (includeDelivery) base *= 1.06;
-    if (rush) base *= 1.15;
-
-    // Legs are always separate (not priced here)
-    // Round for display
-    return Math.round(base / 10) * 10;
+    // min floor to keep luxury vibe
+    if (p < 450) p = 450;
+    return Math.round(p / 10) * 10;
   }, [
     buildType,
-    tableType,
     wood,
+    metal,
+    hasSacredGeometry,
+    includeToneWork,
+    tableType,
+    shape,
     edgeStyle,
     resinPattern,
-    metal,
-    finish,
-    crystal,
-    geom,
-    lightingFx,
-    lengthIn,
-    widthIn,
-    thicknessIn,
-    includeDelivery,
-    rush,
+    length,
+    width,
+    depth,
+    shelfCount,
+    shelfStyle,
+    cabinetStyle,
+    linearFeet,
+    trimStyle,
+    trimFeet,
+    thickness,
+    lightingStyle,
   ]);
-
-  // Preview model
-  const preview = useMemo(() => {
-    // Map to colors and sizes that feel proportional
-    const L = clamp(lengthIn * 5, 240, 900); // px
-    const W = clamp(widthIn * 5, 180, 700); // px
-    const woodColor = woodHex(wood);
-    const metalColor = metalHex(metal);
-    const showRiver = resinPattern === "River";
-    const isTable = buildType === "Table";
-    const isLive = edgeStyle === "Live Edge" || (isTable && (tableType === "Live-Edge Slab" || tableType.includes("River")));
-
-    return { L, W, woodColor, metalColor, showRiver, isTable, isLive };
-  }, [lengthIn, widthIn, wood, metal, resinPattern, buildType, tableType, edgeStyle]);
 
   return (
     <main className="min-h-screen bg-black text-white">
-      <div className="mx-auto max-w-6xl px-4 py-10">
-        {/* Title */}
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-[#E8C987]">
-            Design Your Custom Build
-          </h1>
-          <p className="mt-3 text-neutral-300">
-            Tables, panels, shelves, cabinetry, trim, lighting, seating, counters — engineered to your space,
-            frequency, and function. {LEGS_POLICY}
-          </p>
+      <div className="mx-auto w-full max-w-7xl px-4 py-8">
+        <div className="mb-6 text-sm text-neutral-400">
+          <span className="opacity-70">Home</span> <span className="opacity-50">/</span>{" "}
+          <span>Custom</span>
         </div>
 
-        {/* Responsive layout */}
-        <div className="grid md:grid-cols-2 gap-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-[#E8C987]">
+          Build Your Custom Piece
+        </h1>
+        <p className="mt-2 text-neutral-300">
+          Configure tables, panels, shelves, cabinetry, lighting and more. Pricing is for
+          planning; {LEG_NOTICE}
+        </p>
+
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Controls */}
-          <div className="space-y-6">
-            <FieldWrap label="Build Type">
-              <Select value={buildType} onChange={setBuildType} options={BUILD_TYPES} />
-            </FieldWrap>
+          <Box>
+            <SectionTitle>Basics</SectionTitle>
+            <div className="mt-4 space-y-4">
+              <Field>
+                <Label>Build Type</Label>
+                <Select value={buildType} onChange={setBuildType} options={BUILD_TYPES} />
+              </Field>
 
-            {buildType === "Table" && (
-              <>
-                <FieldWrap label="Table Type">
-                  <Select value={tableType} onChange={setTableType} options={TABLE_TYPES} />
-                </FieldWrap>
-                <FieldWrap label="Edge Style">
-                  <Select value={edgeStyle} onChange={setEdgeStyle} options={EDGE_STYLES} />
-                </FieldWrap>
-              </>
-            )}
+              <Row>
+                <Field>
+                  <Label>Primary Wood</Label>
+                  <Select value={wood} onChange={setWood} options={WOODS} />
+                </Field>
+                <Field>
+                  <Label>Metal Accents</Label>
+                  <Select value={metal} onChange={setMetal} options={METALS} />
+                </Field>
+              </Row>
 
-            {buildType !== "Table" && (
-              <FieldWrap label="Edge Style">
-                <Select value={edgeStyle} onChange={setEdgeStyle} options={EDGE_STYLES} />
-              </FieldWrap>
-            )}
+              <Row>
+                <Field>
+                  <Label>Crystals</Label>
+                  <Select value={crystal} onChange={setCrystal} options={CRYSTALS} />
+                </Field>
+                <Field>
+                  <Label>Thickness (in)</Label>
+                  <Input value={thickness} onChange={setThickness} type="number" step={0.25} />
+                </Field>
+              </Row>
 
-            <div className="grid grid-cols-3 gap-4">
-              <FieldWrap label="Length">
-                <NumberField value={lengthIn} onChange={setLengthIn} min={12} step={1} unit="in" />
-              </FieldWrap>
-              <FieldWrap label="Width / Depth">
-                <NumberField value={widthIn} onChange={setWidthIn} min={6} step={1} unit="in" />
-              </FieldWrap>
-              <FieldWrap label="Thickness">
-                <NumberField value={thicknessIn} onChange={setThicknessIn} min={1} step={0.25} unit="in" />
-              </FieldWrap>
+              <Row>
+                <Field>
+                  <Label>Length (in)</Label>
+                  <Input value={length} onChange={setLength} type="number" />
+                </Field>
+                <Field>
+                  <Label>Width (in) / Depth</Label>
+                  <Input value={width} onChange={setWidth} type="number" />
+                </Field>
+              </Row>
+
+              <Row>
+                <Field>
+                  <Toggle
+                    checked={hasSacredGeometry}
+                    onChange={setHasSacredGeometry}
+                    label="Sacred Geometry Integration"
+                  />
+                </Field>
+                <Field>
+                  <Toggle
+                    checked={includeToneWork}
+                    onChange={setIncludeToneWork}
+                    label="Tone Programming (Resonance Tuning)"
+                  />
+                </Field>
+              </Row>
             </div>
+          </Box>
 
-            <FieldWrap label="Primary Wood">
-              <Select value={wood} onChange={setWood} options={WOODS} />
-            </FieldWrap>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <FieldWrap label="Resin Pattern">
-                <Select value={resinPattern} onChange={setResinPattern} options={RESIN_PATTERNS} />
-              </FieldWrap>
-              <FieldWrap label="Metal / Accents">
-                <Select value={metal} onChange={setMetal} options={METALS_WITH_NONE} />
-              </FieldWrap>
+          {/* Preview */}
+          <Box>
+            <SectionTitle>Live Preview</SectionTitle>
+            <div className="mt-4">
+              <Preview
+                buildType={buildType}
+                width={width}
+                length={length}
+                depth={depth}
+                wood={wood}
+                metal={metal}
+                resinPattern={resinPattern}
+                edgeStyle={edgeStyle}
+                shape={shape}
+              />
             </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <FieldWrap label="Energetic Crystals (Level)">
-                <Select value={crystal} onChange={setCrystal} options={CRYSTAL_INTENSITY} />
-              </FieldWrap>
-              <FieldWrap label="Sacred Geometry Layer">
-                <Select value={geom} onChange={setGeom} options={SACRED_GEOM} />
-              </FieldWrap>
+            <div className="mt-4 text-sm text-neutral-400">
+              Preview is an approximation for layout and accents (not a photo). Final visuals are
+              confirmed during design review.
             </div>
+          </Box>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <FieldWrap label="Finish">
-                <Select value={finish} onChange={setFinish} options={FINISHES} />
-              </FieldWrap>
+          {/* Type-specific controls */}
+          <Box>
+            <SectionTitle>Type-Specific Options</SectionTitle>
+            <div className="mt-4 space-y-4">
+              {buildType === "Table" && (
+                <>
+                  <Row>
+                    <Field>
+                      <Label>Table Type</Label>
+                      <Select value={tableType} onChange={setTableType} options={TABLE_TYPES} />
+                    </Field>
+                    <Field>
+                      <Label>Shape</Label>
+                      <Select value={shape} onChange={setShape} options={SHAPES} />
+                    </Field>
+                  </Row>
+                  <Row>
+                    <Field>
+                      <Label>Edge Style</Label>
+                      <Select value={edgeStyle} onChange={setEdgeStyle} options={EDGE_STYLES} />
+                    </Field>
+                    <Field>
+                      <Label>Resin Pattern</Label>
+                      <Select
+                        value={resinPattern}
+                        onChange={setResinPattern}
+                        options={RESIN_PATTERNS}
+                      />
+                    </Field>
+                  </Row>
+                </>
+              )}
+
+              {buildType === "Counter / Bar Top" && (
+                <>
+                  <Row>
+                    <Field>
+                      <Label>Edge Style</Label>
+                      <Select value={edgeStyle} onChange={setEdgeStyle} options={EDGE_STYLES} />
+                    </Field>
+                    <Field>
+                      <Label>Resin Pattern</Label>
+                      <Select
+                        value={resinPattern}
+                        onChange={setResinPattern}
+                        options={RESIN_PATTERNS}
+                      />
+                    </Field>
+                  </Row>
+                </>
+              )}
+
+              {buildType === "Wall Panel" && (
+                <>
+                  <Row>
+                    <Field>
+                      <Label>Panel Pattern</Label>
+                      <Select
+                        value={panelPattern}
+                        onChange={setPanelPattern}
+                        options={PANEL_PATTERNS}
+                      />
+                    </Field>
+                    <Field>
+                      <Label>Depth (in)</Label>
+                      <Input value={depth} onChange={setDepth} type="number" />
+                    </Field>
+                  </Row>
+                </>
+              )}
+
+              {buildType === "Floating Shelves" && (
+                <>
+                  <Row>
+                    <Field>
+                      <Label>Shelf Style</Label>
+                      <Select value={shelfStyle} onChange={setShelfStyle} options={SHELF_STYLES} />
+                    </Field>
+                    <Field>
+                      <Label>Depth (in)</Label>
+                      <Input value={depth} onChange={setDepth} type="number" />
+                    </Field>
+                  </Row>
+                  <Row>
+                    <Field>
+                      <Label>Number of Shelves</Label>
+                      <Input value={shelfCount} onChange={setShelfCount} type="number" />
+                    </Field>
+                  </Row>
+                </>
+              )}
+
+              {buildType === "Cabinetry" && (
+                <>
+                  <Row>
+                    <Field>
+                      <Label>Cabinet Style</Label>
+                      <Select
+                        value={cabinetStyle}
+                        onChange={setCabinetStyle}
+                        options={CABINET_STYLES}
+                      />
+                    </Field>
+                    <Field>
+                      <Label>Linear Feet</Label>
+                      <Input value={linearFeet} onChange={setLinearFeet} type="number" />
+                    </Field>
+                  </Row>
+                </>
+              )}
+
+              {buildType === "Interior Trim / Moulding" && (
+                <>
+                  <Row>
+                    <Field>
+                      <Label>Trim Style</Label>
+                      <Select value={trimStyle} onChange={setTrimStyle} options={TRIM_STYLES} />
+                    </Field>
+                    <Field>
+                      <Label>Run Length (ft)</Label>
+                      <Input value={trimFeet} onChange={setTrimFeet} type="number" />
+                    </Field>
+                  </Row>
+                </>
+              )}
 
               {buildType === "Lighting" && (
-                <FieldWrap label="Lighting Effects">
-                  <Select value={lightingFx} onChange={setLightingFx} options={LIGHTING_FX} />
-                </FieldWrap>
+                <>
+                  <Row>
+                    <Field>
+                      <Label>Lighting Style</Label>
+                      <Select
+                        value={lightingStyle}
+                        onChange={setLightingStyle}
+                        options={LIGHTING_STYLES}
+                      />
+                    </Field>
+                    <Field>
+                      <Label>Width / Span (in)</Label>
+                      <Input value={width} onChange={setWidth} type="number" />
+                    </Field>
+                  </Row>
+                </>
               )}
             </div>
+          </Box>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <Toggle checked={includeDelivery} onChange={setIncludeDelivery} label="Include White-Glove Delivery" />
-              <Toggle checked={rush} onChange={setRush} label="Rush Fabrication" />
-            </div>
-
-            <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-5">
-              <div className="text-sm text-neutral-400">Instant Estimate*</div>
-              <div className="text-3xl font-bold text-[#E8C987] mt-1">${price.toLocaleString()}</div>
-              <div className="text-xs text-neutral-500 mt-2">
-                *Subject to final design, materials availability, legs/hardware, logistics, and on-site requirements.
-              </div>
-            </div>
-          </div>
-
-          {/* Live Preview */}
-          <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-5">
-            <div className="text-sm text-neutral-400 mb-3">Live Preview (illustrative)</div>
-            <div className="w-full overflow-x-auto">
-              <svg
-                width={preview.L + 40}
-                height={preview.W + 40}
-                viewBox={`0 0 ${preview.L + 40} ${preview.W + 40}`}
-                className="mx-auto block"
-                role="img"
-                aria-label="Design preview"
-              >
-                {/* backdrop */}
-                <rect x={0} y={0} width={preview.L + 40} height={preview.W + 40} fill="#0b0b0b" />
-                {/* table / panel shape */}
-                <g transform="translate(20,20)">
-                  {/* wood body */}
-                  <rect
-                    x={0}
-                    y={0}
-                    width={preview.L}
-                    height={preview.W}
-                    rx={edgeRadius(edgeStyle)}
-                    ry={edgeRadius(edgeStyle)}
-                    fill={preview.woodColor}
-                    stroke={preview.metalColor === "transparent" ? "#1c1c1c" : preview.metalColor}
-                    strokeWidth={preview.metalColor === "transparent" ? 2 : 6}
-                  />
-                  {/* river */}
-                  {preview.showRiver && (
-                    <path
-                      d={riverPath(preview.L, preview.W)}
-                      fill="#2d98c2"
-                      fillOpacity="0.6"
-                    />
-                  )}
-                  {/* subtle grain lines */}
-                  {grain(preview.L, preview.W, edgeStyle)}
-                </g>
-              </svg>
-            </div>
-
-            <ul className="mt-4 text-sm text-neutral-300 space-y-1">
-              <li>
-                <strong>Wood:</strong> {wood}
-              </li>
-              <li>
-                <strong>Metal Accents:</strong> {metal}
-              </li>
-              <li>
-                <strong>Resin:</strong> {resinPattern}
-              </li>
-              <li>
-                <strong>Geometry:</strong> {geom} &nbsp; • &nbsp; <strong>Crystals:</strong> {crystal}
-              </li>
-              <li>
-                <strong>Finish:</strong> {finish}
-              </li>
-              <li>
-                <strong>Dims:</strong> {lengthIn}" × {widthIn}" × {thicknessIn}"
-              </li>
+          {/* Quote + CTA */}
+          <Box>
+            <SectionTitle>Instant Quote (Estimate)</SectionTitle>
+            <div className="mt-4 text-4xl font-extrabold text-[#E8C987]">${price.toLocaleString()}</div>
+            <ul className="mt-3 text-sm text-neutral-400 list-disc pl-5 space-y-1">
+              <li>Premium hardwoods, hand-finished.</li>
+              <li>Metals available: Gold, Copper, Brass, Bronze, Steel, Aluminum.</li>
+              <li>Crystals optional; tuned with tone programming.</li>
+              <li>{LEG_NOTICE}</li>
             </ul>
-
-            <div className="mt-5 text-xs text-neutral-500">
-              Visuals are illustrative. Final proposals include detailed drawings/specs. {LEGS_POLICY}
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              <a
+                href="/about"
+                className="flex-1 text-center rounded-lg bg-[#E8C987] text-black font-semibold py-3 hover:opacity-90"
+              >
+                Learn the Method
+              </a>
+              <a
+                href="/nationwide"
+                className="flex-1 text-center rounded-lg border border-[#E8C987] text-[#E8C987] font-semibold py-3 hover:bg-[#E8C987] hover:text-black"
+              >
+                Book a Design Call
+              </a>
             </div>
-          </div>
+          </Box>
         </div>
       </div>
     </main>
   );
-}
-
-/* ---------------------------
-   SVG HELPERS
-----------------------------*/
-
-function edgeRadius(edge: (typeof EDGE_STYLES)[number]) {
-  if (edge === "Rounded") return 18;
-  if (edge === "Chamfered") return 4;
-  return 2; // Live & Straight render similarly in this 2D abstraction
-}
-
-function riverPath(L: number, W: number) {
-  // A soft bezier river down the center third
-  const x0 = 20, x1 = L - 20;
-  const yMid = W / 2;
-  const amp = Math.max(18, W * 0.12);
-  return `
-    M ${x0} ${yMid - amp}
-    C ${L * 0.33} ${yMid - amp * 1.5}, ${L * 0.66} ${yMid + amp * 1.5}, ${x1} ${yMid + amp}
-    L ${x1} ${yMid + amp * 2}
-    C ${L * 0.66} ${yMid + amp * 3}, ${L * 0.33} ${yMid - amp}, ${x0} ${yMid - amp * 2}
-    Z
-  `;
-}
-
-function grain(L: number, W: number, edge: (typeof EDGE_STYLES)[number]) {
-  // Draw faint grain lines to avoid flat look
-  const lines = [];
-  const rows = 6;
-  for (let i = 1; i <= rows; i++) {
-    const y = Math.round((W / (rows + 1)) * i);
-    lines.push(
-      <line
-        key={`g-${i}`}
-        x1={26}
-        y1={y + 20}
-        x2={L - 6}
-        y2={y + 20}
-        stroke="rgba(0,0,0,0.12)"
-        strokeWidth={edge === "Live Edge" ? 1.2 : 0.9}
-      />
-    );
-  }
-  return <g>{lines}</g>;
 }
