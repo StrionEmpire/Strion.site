@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import SoundToggle from "@/components/SoundToggle";
 
 export default function Home() {
   // call this on important clicks for the subtle chime
