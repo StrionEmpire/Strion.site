@@ -25,7 +25,7 @@ const cats = CATEGORIES;
               borderRadius:14, padding:16,
               background:"linear-gradient(180deg, rgba(232,201,135,0.06), rgba(0,0,0,0.25))"
             }}>
-            <div style={{fontWeight:800, fontSize:18, color:"#E8C987"}}>{cat.label}</div>
+            <div style={{fontWeight:800, fontSize:18, color:"#E8C987"}}>{cat.title}</div>
             <div style={{opacity:0.8, color:"#ddd", fontSize:14, marginTop:6}}
               >{cat.title}</div>
             <div style={{marginTop:14, display:"flex", gap:10}}>
