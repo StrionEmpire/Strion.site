@@ -91,4 +91,8 @@ export const CATEGORY_OPTIONS: Record<string, {
 export function listCategories(): CatalogItem[] { return CATEGORIES; }
 export function getCategory(slug: string): CatalogItem | undefined {
   return CATEGORIES.find(c => c.slug === slug);
+
+export function getCategory(slug: string) {
+  return CATEGORIES.find(c => c.slug === slug);
+}
 }
