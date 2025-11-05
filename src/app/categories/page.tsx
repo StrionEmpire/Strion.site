@@ -43,37 +43,10 @@ export default function Categories(){
       <p style={{color:"#cfcfcf",marginTop:8,lineHeight:1.7}}>
         Explore our most requested builds. Each category links to examples and can be configured in the Custom page.
       </p>
-
-      <section style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:16,marginTop:16}}>
-        {cats.map(c => (
-          <article key={c.slug} style={card}>
-            <div style={{fontWeight:800}}>{c.title}</div>
-            <div style={{color:"#bdbdbd",marginTop:6}}>{c.blurb}</div>
-            <div style={{marginTop:10}}>
-              <Link href={`/custom?itemType=${encodeURIComponent(toItemType(c.slug))}`} style={{ color:"#C6A746", textDecoration:"none" }}>
-                Configure this category →
-              </Link>
             </div>
           </article>
         ))}
       </section>
     </main>
   );
-}
-
-function toItemType(slug: string){
-  if (slug.includes("conference")) return "Conference Table";
-  if (slug.includes("dining")) return "Dining Table";
-  if (slug.includes("coffee")) return "Coffee Table";
-  if (slug.includes("desks")) return "Desk";
-  if (slug.includes("wall-panels")) return "Wall Panel";
-  if (slug.includes("wall-lights")) return "Wall Light";
-  if (slug.includes("rails")) return "Rail";
-  if (slug.includes("benches")) return "Bench";
-  if (slug.includes("altars")) return "Altar";
-  if (slug.includes("mirrors")) return "Mirror";
-  if (slug.includes("trays")) return "Side Table";
-  if (slug.includes("live-edge")) return "Dining Table";
-  if (slug.includes("epoxy-river")) return "Dining Table";
-  return "Dining Table";
 }
