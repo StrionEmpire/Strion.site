@@ -3,11 +3,7 @@
 
 import { Suspense, useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import {
-  getCategory, listCategories, defaultsFor, estimate,
-  WOODS, METALS, FINISHES, EDGE_STYLES, RESIN_PATTERNS,
-  GEOMETRIES, LIGHTING, CABINET_FRONTS, HARDWARE
-} from "@/lib/catalog";
+import { CATEGORIES, CATEGORY_OPTIONS } from "../../lib/catalog";
 
 /* ---------- tiny field components ---------- */
 function Label({children}:{children:any}){ return <div style={{fontSize:12,opacity:0.8,marginBottom:6}}>{children}</div>; }
