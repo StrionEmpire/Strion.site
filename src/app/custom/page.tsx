@@ -4,7 +4,7 @@
 import { Suspense, useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { CATEGORIES, CATEGORY_OPTIONS, WOODS, METALS, RESIN_PATTERNS, EDGE_STYLES, FINISHES, CRYSTAL_MODES } from "../../lib/catalog";
-
+import { getCategory } from "../../lib/catalog";
 /* ---------- tiny field components ---------- */
 function Label({children}:{children:any}){ return <div style={{fontSize:12,opacity:0.8,marginBottom:6}}>{children}</div>; }
 function Select({value,onChange,options}:{value:string;onChange:(v:string)=>void;options:string[]}) {
@@ -25,7 +25,7 @@ function Input({value,onChange,placeholder,type="text"}:{value:string|number;onC
 
 /* ---------- simple SVG preview (cleaner look) ---------- */
 function Preview({slug, wood, metal, resin, edge}:{slug:string; wood:string; metal:string; resin:string; edge:string}){
-  const label = getCategory(slug)?.label ?? "";
+  const title = getCategory(slug)?.title ?? "";
   const darkWood = ["Walnut","Wenge","Bubinga","Rosewood (where legal/compliant)"].includes(wood);
   const woodFill = darkWood ? "#3a2b23" : ["Cherry","Teak","African Mahogany","Sapele","Iroko","Padauk","Zebrawood","Purpleheart"].includes(wood) ? "#7a5132" : "#caa76f";
   const metalFill =
