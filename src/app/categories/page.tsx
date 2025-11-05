@@ -1,3 +1,4 @@
+
 // src/app/categories/page.tsx
 import Link from "next/link";
 import { CATEGORIES, CATEGORY_OPTIONS } from "../../lib/catalog";
@@ -26,7 +27,7 @@ const cats = CATEGORIES;
             }}>
             <div style={{fontWeight:800, fontSize:18, color:"#E8C987"}}>{cat.label}</div>
             <div style={{opacity:0.8, color:"#ddd", fontSize:14, marginTop:6}}
-              >{cat.blurb}</div>
+              >{cat.title}</div>
             <div style={{marginTop:14, display:"flex", gap:10}}>
               <Link
                 href={`/custom?itemType=${encodeURIComponent(cat.slug)}`}
