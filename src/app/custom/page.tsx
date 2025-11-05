@@ -3,7 +3,7 @@
 
 import { Suspense, useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { CATEGORIES, CATEGORY_OPTIONS } from "../../lib/catalog";
+import { CATEGORIES, CATEGORY_OPTIONS, WOODS, METALS, RESIN_PATTERNS, EDGE_STYLES, FINISHES, CRYSTAL_MODES } from "../../lib/catalog";
 
 /* ---------- tiny field components ---------- */
 function Label({children}:{children:any}){ return <div style={{fontSize:12,opacity:0.8,marginBottom:6}}>{children}</div>; }
