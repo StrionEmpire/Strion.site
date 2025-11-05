@@ -1,137 +1,94 @@
 // src/lib/catalog.ts
 
 export type Category =
-  | "Dining Tables"
+  | "Tables"
   | "Conference Tables"
-  | "Coffee Tables"
-  | "Side / End Tables"
-  | "Console Tables"
-  | "Live-Edge Slab"
-  | "River Tables"
-  | "Work Desks"
-  | "Reception Desks"
   | "Wall Panels"
   | "Floating Shelves"
   | "Cabinetry"
   | "Interior Trim / Moulding"
-  | "Stairs & Railing"
-  | "Benches / Seating"
-  | "Beds"
-  | "Vanities"
-  | "Doors (Interior/Exterior)"
-  | "Counter / Bar Tops"
   | "Lighting"
-  | "Outdoor Tables"
-  | "Resin Art / Inlays";
+  | "Benches & Seating"
+  | "Counter & Bar Tops"
+  | "Doors & Partitions"
+  | "Stairs & Railings"
+  | "Beds & Headboards"
+  | "Consoles & Media Centers"
+  | "Reception Desks";
 
-export const CATEGORIES: { slug: string; title: Category; blurb: string }[] = [
-  { slug: "dining-tables",       title: "Dining Tables",       blurb: "Heirloom dining tables in solid hardwoods, with optional resin rivers, metals, and sacred geometry." },
-  { slug: "conference-tables",   title: "Conference Tables",   blurb: "Statement conference tables for boardrooms and collaboration spaces; power & cable mgmt ready." },
-  { slug: "coffee-tables",       title: "Coffee Tables",       blurb: "Centerpiece coffee tables—classic slabs, river styles, or geometric inlays." },
-  { slug: "side-end-tables",     title: "Side / End Tables",   blurb: "Pairable side tables and nightstands, sized and finished to your space." },
-  { slug: "console-tables",      title: "Console Tables",      blurb: "Entry and sofa-back consoles with metal accents, stone/crystal options." },
-  { slug: "live-edge",           title: "Live-Edge Slab",      blurb: "Single-slab live edge builds—bookmatched options available." },
-  { slug: "river-tables",        title: "River Tables",        blurb: "Epoxy river, delta, whirl, and negative-space patterns with metallic or stone loads optional." },
-  { slug: "work-desks",          title: "Work Desks",          blurb: "Executive and sit/stand desks with cable pass-throughs and drawer options." },
-  { slug: "reception-desks",     title: "Reception Desks",     blurb: "Brand-forward reception desks—lighting and logo inlays supported." },
-  { slug: "wall-panels",         title: "Wall Panels",         blurb: "Acoustic, sacred-geometry, and feature panels in wood/metal/crystal blends." },
-  { slug: "floating-shelves",    title: "Floating Shelves",    blurb: "Invisible-mount shelves in matching species and finishes." },
-  { slug: "cabinetry",           title: "Cabinetry",           blurb: "Custom built-ins, kitchen islands, and media walls." },
-  { slug: "trim",                title: "Interior Trim / Moulding", blurb: "Casing, crown, base, coffered ceilings, and feature millwork." },
-  { slug: "stairs-railing",      title: "Stairs & Railing",    blurb: "Treads, stringers, handrails—wood/metal/glass hybrid options." },
-  { slug: "benches-seating",     title: "Benches / Seating",   blurb: "Entry, dining, outdoor, and meditation benches." },
-  { slug: "beds",                title: "Beds",                 blurb: "Platform frames, headboards, floating designs, hidden lighting." },
-  { slug: "vanities",            title: "Vanities",            blurb: "Solid wood vanities, stone tops optional, integrated lighting." },
-  { slug: "doors",               title: "Doors (Interior/Exterior)", blurb: "Slab, pivot, and panel doors—metallic and crystal inlays optional." },
-  { slug: "bar-tops",            title: "Counter / Bar Tops",  blurb: "Commercial/residential tops with food-safe finishes." },
-  { slug: "lighting",            title: "Lighting",            blurb: "Energetic lighting—wood/metal bodies with crystal/tone integration." },
-  { slug: "outdoor-tables",      title: "Outdoor Tables",      blurb: "Weather-ready finishes, hardwood or composite hybrids." },
-  { slug: "resin-art",           title: "Resin Art / Inlays",  blurb: "Inlays, logos, sacred patterns—subtle to statement." },
+export interface CatalogItem {
+  slug: string;        // url-safe key
+  title: Category;     // human readable
+  blurb: string;       // short description
+}
+
+export const CATEGORIES: CatalogItem[] = [
+  { slug: "tables", title: "Tables", blurb: "Dining, coffee, live-edge, resin—built for daily impact." },
+  { slug: "conference-tables", title: "Conference Tables", blurb: "Boardroom scale with power + cable management." },
+  { slug: "wall-panels", title: "Wall Panels", blurb: "Sacred geometry, acoustic, metal/crystal inlays." },
+  { slug: "floating-shelves", title: "Floating Shelves", blurb: "Hidden brackets, lighting, metal trims." },
+  { slug: "cabinetry", title: "Cabinetry", blurb: "Kitchens, vanities, built-ins, media walls." },
+  { slug: "interior-trim", title: "Interior Trim / Moulding", blurb: "Crown, base, casings, wainscoting, beams." },
+  { slug: "lighting", title: "Lighting", blurb: "Energetic fixtures with embedded crystal arrays." },
+  { slug: "benches", title: "Benches & Seating", blurb: "Entry, dining, meditative seating, outdoor." },
+  { slug: "tops", title: "Counter & Bar Tops", blurb: "Solid, butcher block, resin, metal edging." },
+  { slug: "doors", title: "Doors & Partitions", blurb: "Slab, panel, slatted, glass/metal dividers." },
+  { slug: "stairs", title: "Stairs & Railings", blurb: "Treads, stringers, posts, wood/metal blends." },
+  { slug: "beds", title: "Beds & Headboards", blurb: "Hardwood frames, panels, LED/energy options." },
+  { slug: "media", title: "Consoles & Media Centers", blurb: "Low boards, built-ins, cable management." },
+  { slug: "reception-desks", title: "Reception Desks", blurb: "Front-of-house statement pieces with branding." },
 ];
 
-// Core option pools (used by Configurator + Category pages)
+// Expandable option pools
 export const WOODS = [
-  "White Oak","Red Oak","Walnut","Maple","Cherry","Ash","Hickory",
-  "Cedar","Pine","Poplar",
-  // exotics
-  "Sapele","Iroko","Padauk","Wenge","Zebrawood","Purpleheart","Teak","Mahogany"
-] as const;
+  "Walnut","White Oak","Red Oak","Maple","Cherry","Ash",
+  "Sapele","African Mahogany","Teak","Wenge","Zebrawood","Bubinga","Iroko","Padauk","Purpleheart",
+  // you can keep adding exotics here later and it flows through
+];
 
 export const METALS = [
   "None",
-  "Gold (24K Leaf Accents)",
-  "Gold (18K Leaf Accents)",
-  "Gold (Foil/Flake Inlay)",
-  "Copper (Solid Bar Inlay)",
-  "Copper (Rod / Piping Edge)",
-  "Copper (Hammered Accents)",
-  "Brass (Solid Band / Inlay)",
-  "Brass (Perforated Grill)",
-  "Bronze (Patinated Accents)",
-  "Stainless Steel (Satin)",
-  "Blackened Steel",
-  "Aluminum (Brushed)"
-] as const;
+  // Gold variants (back, multiple)
+  "Gold (24K Leaf Accents)","Gold (18K Leaf Accents)","Gold (Foil/Flake Inlay)","Gold (Edge Band)",
+  // Copper variants (multiple)
+  "Copper (Solid Bar Inlay)","Copper (Rod / Piping Edge)","Copper (Hammered Accents)","Copper (Patina Verde)",
+  // Other metals
+  "Brass (Solid Inlay)","Brass (Edge Band)","Bronze (Patinated Accents)",
+  "Stainless Steel (Brushed)","Stainless Steel (Mirror)","Aluminum (Brushed)"
+];
 
-export const RESIN_PATTERNS = [
-  "None","River","Delta","Whirlpool","Vein","Celestial Dust","Negative Space"
-] as const;
+export const RESIN_PATTERNS = ["None","River","Marble Swirl","Vein Inlay","Window Inlay"];
+export const EDGE_STYLES = ["Standard","Live Edge","Chamfer","Roundover","Bevel"];
+export const FINISHES = ["Natural Oil","Hardwax Oil (Matte)","Satin Poly","High-Gloss Poly","Two-Part Urethane"];
+export const CRYSTAL_MODES = ["None","Embedded Nodes","Removable Nodes","Under-surface Array"];
 
-export const EDGE_STYLES = [
-  "Square","Chamfer","Roundover","Live Edge"
-] as const;
-
-export const FINISHES = [
-  "Natural Matte","Satin","Gloss","Hand-Rubbed Oil","Food-Safe Oil/Wax","Outdoor Marine"
-] as const;
-
-export const CRYSTAL_MODES = [
-  "None","Subtle Embed","Visible Accent","Grid Array (Panel/Lighting)"
-] as const;
-
-// Per-category option visibility (keeps Configurator in sync with Categories)
-export const CATEGORY_OPTIONS: Record<Category, {
-  woods?: readonly string[];
-  metals?: readonly string[];
-  resinPatterns?: readonly string[];
-  edgeStyles?: readonly string[];
-  finishes?: readonly string[];
-  crystals?: readonly string[];
-  sizeUnits?: "in" | "cm";
-  defaults?: Partial<{
-    wood: string;
-    metal: string;
-    resinPattern: string;
-    edgeStyle: string;
-    finish: string;
-    crystals: string;
-  }>;
+// Category → specific option sets (keeps Custom in sync with Categories)
+export const CATEGORY_OPTIONS: Record<string, {
+  woods?: string[];
+  metals?: string[];
+  resin?: string[];
+  edges?: string[];
+  finishes?: string[];
+  crystals?: string[];
+  sizeHints?: string; // small UX hint text
 }> = {
-  "Dining Tables":            { woods: WOODS, metals: METALS, resinPatterns: RESIN_PATTERNS, edgeStyles: EDGE_STYLES, finishes: FINISHES, crystals: CRYSTAL_MODES, sizeUnits: "in", defaults: { finish: "Satin" } },
-  "Conference Tables":        { woods: WOODS, metals: METALS, resinPatterns: RESIN_PATTERNS, edgeStyles: EDGE_STYLES, finishes: FINISHES, crystals: CRYSTAL_MODES, sizeUnits: "in", defaults: { metal: "Brass (Solid Band / Inlay)" } },
-  "Coffee Tables":            { woods: WOODS, metals: METALS, resinPatterns: RESIN_PATTERNS, edgeStyles: EDGE_STYLES, finishes: FINISHES, crystals: CRYSTAL_MODES, sizeUnits: "in" },
-  "Side / End Tables":        { woods: WOODS, metals: METALS, resinPatterns: RESIN_PATTERNS, edgeStyles: EDGE_STYLES, finishes: FINISHES, crystals: CRYSTAL_MODES, sizeUnits: "in" },
-  "Console Tables":           { woods: WOODS, metals: METALS, resinPatterns: RESIN_PATTERNS, edgeStyles: EDGE_STYLES, finishes: FINISHES, crystals: CRYSTAL_MODES, sizeUnits: "in" },
-  "Live-Edge Slab":           { woods: WOODS, metals: METALS, resinPatterns: ["None"], edgeStyles: ["Live Edge"], finishes: FINISHES, crystals: CRYSTAL_MODES, sizeUnits: "in", defaults: { resinPattern: "None", edgeStyle: "Live Edge" } },
-  "River Tables":             { woods: WOODS, metals: METALS, resinPatterns: RESIN_PATTERNS.filter(p=>p!=="None"), edgeStyles: EDGE_STYLES, finishes: FINISHES, crystals: CRYSTAL_MODES, sizeUnits: "in", defaults: { resinPattern: "River" } },
-  "Work Desks":               { woods: WOODS, metals: METALS, resinPatterns: ["None","Vein","Celestial Dust"], edgeStyles: EDGE_STYLES, finishes: FINISHES, crystals: CRYSTAL_MODES },
-  "Reception Desks":          { woods: WOODS, metals: METALS, resinPatterns: ["None","Vein","Celestial Dust","Negative Space"], edgeStyles: EDGE_STYLES, finishes: FINISHES, crystals: CRYSTAL_MODES },
-  "Wall Panels":              { woods: WOODS, metals: METALS, resinPatterns: ["None","Celestial Dust","Negative Space"], edgeStyles: ["Square","Chamfer","Roundover"], finishes: FINISHES, crystals: ["None","Subtle Embed","Grid Array (Panel/Lighting)"], sizeUnits: "in" },
-  "Floating Shelves":         { woods: WOODS, metals: ["None","Brass (Solid Band / Inlay)","Blackened Steel"], resinPatterns: ["None","Vein"], edgeStyles: EDGE_STYLES, finishes: FINISHES, crystals: ["None","Subtle Embed"] },
-  "Cabinetry":                { woods: WOODS, metals: ["None","Brass (Solid Band / Inlay)","Blackened Steel"], resinPatterns: ["None","Vein"], edgeStyles: ["Square","Chamfer","Roundover"], finishes: FINISHES, crystals: ["None","Subtle Embed"] },
-  "Interior Trim / Moulding": { woods: WOODS, metals: ["None","Brass (Solid Band / Inlay)"], resinPatterns: ["None"], edgeStyles: ["Square","Chamfer","Roundover"], finishes: FINISHES, crystals: ["None"] },
-  "Stairs & Railing":         { woods: WOODS, metals: ["None","Brass (Solid Band / Inlay)","Blackened Steel","Stainless Steel (Satin)"], resinPatterns: ["None"], edgeStyles: EDGE_STYLES, finishes: FINISHES, crystals: ["None","Subtle Embed"] },
-  "Benches / Seating":        { woods: WOODS, metals: METALS, resinPatterns: ["None","Vein"], edgeStyles: EDGE_STYLES, finishes: FINISHES, crystals: ["None","Subtle Embed"] },
-  "Beds":                     { woods: WOODS, metals: ["None","Brass (Solid Band / Inlay)","Blackened Steel"], resinPatterns: ["None","Vein"], edgeStyles: EDGE_STYLES, finishes: FINISHES, crystals: ["None","Subtle Embed"] },
-  "Vanities":                 { woods: WOODS, metals: ["None","Brass (Solid Band / Inlay)","Blackened Steel"], resinPatterns: ["None","Vein"], edgeStyles: EDGE_STYLES, finishes: FINISHES, crystals: ["None"] },
-  "Doors (Interior/Exterior)":{ woods: WOODS, metals: ["None","Brass (Solid Band / Inlay)","Blackened Steel"], resinPatterns: ["None","Vein","Negative Space"], edgeStyles: ["Square","Chamfer","Roundover"], finishes: FINISHES, crystals: ["None","Subtle Embed","Visible Accent"] },
-  "Counter / Bar Tops":       { woods: WOODS, metals: METALS, resinPatterns: ["None","Vein","Celestial Dust"], edgeStyles: EDGE_STYLES, finishes: FINISHES, crystals: ["None","Subtle Embed"] },
-  "Lighting":                 { woods: WOODS, metals: METALS, resinPatterns: ["None","Celestial Dust"], edgeStyles: ["Square","Roundover"], finishes: FINISHES, crystals: ["None","Visible Accent","Grid Array (Panel/Lighting)"] },
-  "Outdoor Tables":           { woods: ["Teak","Mahogany","Iroko","Sapele","Cedar","White Oak"] as const, metals: ["None","Stainless Steel (Satin)","Aluminum (Brushed)"] as const, resinPatterns: ["None","Vein"], edgeStyles: EDGE_STYLES, finishes: ["Outdoor Marine"] as const, crystals: ["None"] as const },
-  "Resin Art / Inlays":       { woods: WOODS, metals: METALS, resinPatterns: ["Vein","Celestial Dust","Negative Space"], edgeStyles: EDGE_STYLES, finishes: FINISHES, crystals: CRYSTAL_MODES },
+  "tables": { woods: WOODS, metals: METALS, resin: RESIN_PATTERNS, edges: EDGE_STYLES, finishes: FINISHES, crystals: CRYSTAL_MODES, sizeHints: "Length/Width/Thickness" },
+  "conference-tables": { woods: WOODS, metals: METALS, resin: RESIN_PATTERNS, edges: EDGE_STYLES, finishes: FINISHES, crystals: CRYSTAL_MODES, sizeHints: "Length/Width (power box cutouts optional)" },
+  "wall-panels": { woods: WOODS, metals: METALS, resin: ["None","Vein Inlay","Window Inlay"], finishes: FINISHES, crystals: CRYSTAL_MODES, sizeHints: "Panel height/width/pattern repeat" },
+  "floating-shelves": { woods: WOODS, metals: METALS, edges: EDGE_STYLES, finishes: FINISHES, crystals: ["None","Embedded Nodes"], sizeHints: "Length/Depth/Thickness, weight rating" },
+  "cabinetry": { woods: WOODS, metals: ["None","Brass (Solid Inlay)","Stainless Steel (Brushed)","Aluminum (Brushed)"], finishes: FINISHES, sizeHints: "Run length, door/drawer layout" },
+  "interior-trim": { woods: WOODS, metals: ["None","Brass (Edge Band)","Bronze (Patinated Accents)"], finishes: FINISHES, sizeHints: "Linear footage, profile style" },
+  "lighting": { woods: WOODS, metals: METALS, finishes: FINISHES, crystals: CRYSTAL_MODES, sizeHints: "Fixture span/height, lumen goals" },
+  "benches": { woods: WOODS, metals: METALS, edges: EDGE_STYLES, finishes: FINISHES, sizeHints: "Length/Depth/Seat height" },
+  "tops": { woods: WOODS, metals: METALS, resin: RESIN_PATTERNS, finishes: FINISHES, sizeHints: "Length/Width/Thickness" },
+  "doors": { woods: WOODS, metals: METALS, finishes: FINISHES, edges: ["Standard","Chamfer","Bevel"], sizeHints: "Width/Height/Thickness, swing/track" },
+  "stairs": { woods: WOODS, metals: ["None","Stainless Steel (Brushed)","Brass (Solid Inlay)","Bronze (Patinated Accents)"], finishes: FINISHES, sizeHints: "Rise/run/tread count, railing type" },
+  "beds": { woods: WOODS, metals: METALS, finishes: FINISHES, sizeHints: "Size (Queen/King/etc.), headboard height" },
+  "media": { woods: WOODS, metals: METALS, finishes: FINISHES, sizeHints: "Overall length/height, device bays" },
+  "reception-desks": { woods: WOODS, metals: METALS, resin: ["None","Window Inlay","Marble Swirl"], finishes: FINISHES, crystals: CRYSTAL_MODES, sizeHints: "Overall footprint, front elevation" },
 };
 
-// Helper for Categories page (keeps your existing call working)
-export function listCategories() {
-  return CATEGORIES;
+export function listCategories(): CatalogItem[] { return CATEGORIES; }
+export function getCategory(slug: string): CatalogItem | undefined {
+  return CATEGORIES.find(c => c.slug === slug);
 }
