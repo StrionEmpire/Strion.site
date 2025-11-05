@@ -50,7 +50,6 @@ export default function Home() {
             <div className="mt-8 flex flex-wrap gap-3 justify-center">
               <Link href="/custom" className="btn-gold" onClick={ping}>Start Your Design</Link>
               <Link href="/about" className="btn-ghost" onClick={ping}>Learn Our Method</Link>
-              <SoundToggle />
             </div>
 
             {/* Category cards */}
