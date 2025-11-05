@@ -1,229 +1,315 @@
+// src/app/custom/page.tsx
 "use client";
-/* @ts-nocheck */
 
-import { Suspense, useMemo, useState, useEffect } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { CATEGORIES, CATEGORY_OPTIONS, WOODS, METALS, RESIN_PATTERNS, EDGE_STYLES, FINISHES, CRYSTAL_MODES } from "../../lib/catalog";
-import { getCategory } from "../../lib/catalog";
-/* ---------- tiny field components ---------- */
+import {
+  getCategory,
+  CATEGORY_OPTIONS,
+  WOODS, METALS, RESIN_PATTERNS, EDGE_STYLES, FINISHES, CRYSTAL_MODES
+} from "../../lib/catalog";
+
+// ---------- tiny field components ----------
 function Label({children}:{children:any}){ return <div style={{fontSize:12,opacity:0.8,marginBottom:6}}>{children}</div>; }
 function Select({value,onChange,options}:{value:string;onChange:(v:string)=>void;options:string[]}) {
   return (
-    <select value={value} onChange={(e)=>onChange(e.target.value)}
-      style={{width:"100%",background:"rgba(0,0,0,0.35)",border:"1px solid rgba(255,255,255,0.12)",color:"#eee",padding:"10px 12px",borderRadius:10}}>
-      {options.map(o=><option key={o} value={o}>{o}</option>)}
+    <select
+      value={value}
+      onChange={(e)=>onChange(e.target.value)}
+      style={{
+        width:"100%", background:"rgba(0,0,0,0.55)", color:"#E8C987",
+        border:"1px solid rgba(232,201,135,0.25)", borderRadius:10,
+        padding:"10px 12px"
+      }}
+    >
+      {options.map(o => <option key={o} value={o}>{o}</option>)}
     </select>
   );
 }
-function Input({value,onChange,placeholder,type="text"}:{value:string|number;onChange:(v:any)=>void;placeholder:string;type?:string}) {
+function Input({value,onChange,placeholder}:{value:string;onChange:(v:string)=>void;placeholder:string}) {
   return (
-    <input value={value} type={type} onChange={(e)=>onChange(e.target.value)}
-      placeholder={placeholder}
-      style={{width:"100%",background:"rgba(0,0,0,0.35)",border:"1px solid rgba(255,255,255,0.12)",color:"#eee",padding:"10px 12px",borderRadius:10}}/>
+    <input
+      value={value} placeholder={placeholder}
+      onChange={(e)=>onChange(e.target.value)}
+      style={{
+        width:"100%", background:"rgba(0,0,0,0.55)", color:"#E8C987",
+        border:"1px solid rgba(232,201,135,0.25)", borderRadius:10,
+        padding:"10px 12px"
+      }}
+    />
+  );
+}
+function Field({label,children}:{label:string;children:any}) {
+  return (
+    <div style={{display:"grid", gap:6}}>
+      <Label>{label}</Label>
+      {children}
+    </div>
+  );
+}
+function Section({title,children}:{title:string;children:any}) {
+  return (
+    <div style={{border:"1px solid rgba(232,201,135,0.18)", borderRadius:14, padding:16}}>
+      <div style={{fontWeight:800, color:"#E8C987", marginBottom:10}}>{title}</div>
+      {children}
+    </div>
   );
 }
 
-/* ---------- simple SVG preview (cleaner look) ---------- */
-function Preview({slug, wood, metal, resin, edge}:{slug:string; wood:string; metal:string; resin:string; edge:string}){
-  const title = getCategory(slug)?.title ?? "";
-  const darkWood = ["Walnut","Wenge","Bubinga","Rosewood (where legal/compliant)"].includes(wood);
-  const woodFill = darkWood ? "#3a2b23" : ["Cherry","Teak","African Mahogany","Sapele","Iroko","Padauk","Zebrawood","Purpleheart"].includes(wood) ? "#7a5132" : "#caa76f";
-  const metalFill =
-    metal.startsWith("Gold") ? "#E9C65B" :
-    metal.startsWith("Copper") ? "#C8753C" :
-    metal.startsWith("Brass") ? "#D9B24C" :
-    metal.startsWith("Bronze") ? "#8A5E3B" :
-    metal.startsWith("Stainless") ? "#BFC6CF" :
-    metal.startsWith("Aluminum") ? "#D5DBE3" : "transparent";
+// ---------- quick pricing model (coherent, not minimalist) ----------
+const BASE_BY_CATEGORY: Record<string, number> = {
+  "tables": 1800, "conference-tables": 4200, "wall-panels": 900,
+  "floating-shelves": 350, "cabinetry": 2200, "interior-trim": 12, // per lf hint
+  "lighting": 800, "benches": 750, "tops": 950, "doors": 1200,
+  "stairs": 2800, "beds": 1800, "media": 1400, "reception-desks": 3600
+};
+
+const METAL_MULTIPLIER: Record<string, number> = {
+  "None": 1,
+  "Gold (24K Leaf Accents)": 1.6,
+  "Gold (18K Leaf Accents)": 1.45,
+  "Gold (Foil/Flake Inlay)": 1.35,
+  "Gold (Edge Band)": 1.30,
+  "Copper (Solid Bar Inlay)": 1.25,
+  "Copper (Rod / Piping Edge)": 1.2,
+  "Copper (Hammered Accents)": 1.22,
+  "Copper (Patina Verde)": 1.28,
+  "Brass (Solid Inlay)": 1.22,
+  "Brass (Edge Band)": 1.18,
+  "Bronze (Patinated Accents)": 1.2,
+  "Stainless Steel (Brushed)": 1.15,
+  "Stainless Steel (Mirror)": 1.2,
+  "Aluminum (Brushed)": 1.1,
+};
+const RESIN_UPCHARGE: Record<string, number> = {
+  "None": 0, "River": 550, "Marble Swirl": 380, "Vein Inlay": 320, "Window Inlay": 440
+};
+const EDGE_UPCHARGE: Record<string, number> = {
+  "Standard": 0, "Live Edge": 300, "Chamfer": 80, "Roundover": 80, "Bevel": 120
+};
+const FINISH_UPCHARGE: Record<string, number> = {
+  "Natural Oil": 0, "Hardwax Oil (Matte)": 120, "Satin Poly": 140, "High-Gloss Poly": 220, "Two-Part Urethane": 340
+};
+const CRYSTAL_UPCHARGE: Record<string, number> = {
+  "None": 0, "Embedded Nodes": 260, "Removable Nodes": 220, "Under-surface Array": 320
+};
+
+function toNum(v:string){ const n = parseFloat(v); return Number.isFinite(n) ? n : 0; }
+
+// ---------- visual preview (cleaner; reacts to options) ----------
+function Preview({
+  slug, wood, metal, resin, edge
+}:{slug:string; wood:string; metal:string; resin:string; edge:string}){
+  const colors = useMemo(()=>{
+    const dark = ["Walnut","Wenge","Bubinga","Zebrawood","Rosewood (where legal/compliant)"].includes(wood);
+    const woodFill = dark ? "#3a2b23" : ["Cherry","Teak","African Mahogany","Sapele","Iroko","Padauk","Purpleheart"].includes(wood) ? "#7a5132" : "#caa76f";
+    const metalFill =
+      metal.startsWith("Gold") ? "#d7b24a" :
+      metal.startsWith("Copper") ? "#b87333" :
+      metal.startsWith("Brass") ? "#b5a642" :
+      metal.startsWith("Bronze") ? "#8c7853" :
+      metal.includes("Mirror") ? "#efefef" :
+      metal.includes("Stainless") ? "#c9c9c9" :
+      metal.includes("Aluminum") ? "#bfbfbf" : "transparent";
+    return { woodFill, metalFill };
+  },[wood, metal]);
+
+  const isTable = slug==="tables" || slug==="conference-tables" || slug==="tops";
+  const isPanel = slug==="wall-panels";
+  const isShelves = slug==="floating-shelves";
+  const isLighting = slug==="lighting";
 
   return (
-    <svg viewBox="0 0 640 360" width="100%" height="100%" style={{borderRadius:14, background:"radial-gradient(1000px 500px at 50% 0%, #19130e, #0b0a09)"}}>
-      <text x="20" y="34" fill="#E8C987" fontWeight={700} fontSize="18">{label}</text>
-      <g>
-        <rect x="40" y="64" width="560" height="220" rx="12" fill={woodFill}/>
-        {edge==="Live Edge" && (
+    <div style={{
+      background:"linear-gradient(180deg, #121212, #000)",
+      border:"1px solid rgba(232,201,135,0.2)", borderRadius:14,
+      display:"grid", placeItems:"center", minHeight:260, position:"relative"
+    }}>
+      <svg width="100%" height="240" viewBox="0 0 800 240" preserveAspectRatio="xMidYMid meet">
+        {/* Base piece */}
+        <rect x="80" y="80" width="640" height="80" rx={edge==="Roundover" ? 16 : edge==="Bevel" ? 2 : edge==="Chamfer" ? 4 : edge==="Live Edge" ? 20 : 6}
+              fill={colors.woodFill} stroke="#000" opacity={0.95}/>
+        {/* Resin window/river */}
+        {resin==="River" && <rect x="360" y="80" width="80" height="80" fill="#2a3f47" opacity={0.9}/>}
+        {resin==="Marble Swirl" && <rect x="120" y="80" width="560" height="80" fill="#cfd3d6" opacity={0.18}/>}
+        {resin==="Vein Inlay" && <rect x="350" y="80" width="6" height="80" fill="#cfd3d6" opacity={0.35}/>}
+        {resin==="Window Inlay" && <rect x="140" y="95" width="520" height="50" fill="#28434c" opacity={0.22}/>}
+        {/* Metal band hint */}
+        {metal!=="None" && <rect x="80" y="160" width="640" height="8" fill={colors.metalFill} opacity={0.9}/>}
+        {/* Category silhouette tweaks */}
+        {isShelves && <rect x="120" y="60" width="560" height="14" fill={colors.metalFill==="transparent"?"#333":colors.metalFill} opacity={0.5}/>}
+        {isPanel && <rect x="120" y="60" width="560" height="12" fill="#000" opacity={0.35}/>}
+        {isLighting && (
           <>
-            <path d="M40,64 C120,72 90,110 40,140 L40,64 Z" fill="#000" opacity="0.18"/>
-            <path d="M600,284 C520,272 540,220 600,180 L600,284 Z" fill="#000" opacity="0.18"/>
+            <circle cx="220" cy="120" r="8" fill="#e8c987" opacity={0.8}/>
+            <circle cx="400" cy="120" r="8" fill="#e8c987" opacity={0.8}/>
+            <circle cx="580" cy="120" r="8" fill="#e8c987" opacity={0.8}/>
           </>
         )}
-        {resin==="River" && <rect x="310" y="64" width="40" height="220" fill="rgba(70,150,190,0.45)" />}
-        {metalFill!=="transparent" && <rect x="40" y="280" width="560" height="6" rx="3" fill={metalFill}/>}
-      </g>
-      <rect x="0" y="318" width="640" height="42" fill="rgba(10,10,10,0.55)"/>
-      <text x="20" y="342" fill="#cfcfcf" fontSize="13">
-        {wood}{metal!=="None" ? ` • ${metal}` : ""}{resin!=="None" ? ` • ${resin}` : ""}{edge ? ` • ${edge}` : ""}
-      </text>
-    </svg>
+      </svg>
+      <div style={{position:"absolute", bottom:10, right:14, fontSize:12, opacity:0.7, color:"#cfcfcf"}}>
+        Preview is illustrative — final designs are photoreal at proposal stage.
+      </div>
+    </div>
   );
 }
 
-/* ---------- Inner page (wrapped by Suspense) ---------- */
-function Inner(){
-  const sp = useSearchParams();
-  // slug comes from /categories link: ?itemType=slug
-  const initialSlug = sp.get("itemType") || "dining-table";
-  const initial = defaultsFor(initialSlug);
+// ---------- main (with Suspense wrapper for search params) ----------
+function CustomInner(){
+  const search = useSearchParams();
+  const slug = (search.get("category") || "tables").toString();
+  const cat = getCategory(slug);
+  const map = CATEGORY_OPTIONS[slug] ?? {};
 
-  const [slug, setSlug] = useState(initial.slug);
-  const [width, setWidth] = useState<number>(initial.width);
-  const [length, setLength] = useState<number>(initial.length);
-  const [thickness, setThickness] = useState<number>(initial.thickness);
-  const [wood, setWood] = useState<string>(initial.wood);
-  const [finish, setFinish] = useState<string>(initial.finish);
-  const [edge, setEdge] = useState<string>(initial.edge);
-  const [resin, setResin] = useState<string>(initial.resin);
-  const [geometry, setGeometry] = useState<string>(initial.geometry);
-  const [lighting, setLighting] = useState<string>(initial.lighting);
-  const [metal, setMetal] = useState<string>("None");
-  const [cabinetLF, setCabinetLF] = useState<number>(24);
+  // State tied to current category’s option pools (fallbacks provided)
+  const [wood, setWood] = useState((map.woods ?? WOODS)[0]);
+  const [metal, setMetal] = useState((map.metals ?? METALS)[0]);
+  const [resin, setResin] = useState((map.resin ?? RESIN_PATTERNS)[0]);
+  const [edge, setEdge] = useState((map.edges ?? EDGE_STYLES)[0]);
+  const [finish, setFinish] = useState((map.finishes ?? FINISHES)[0]);
+  const [crystal, setCrystal] = useState((map.crystals ?? CRYSTAL_MODES)[0]);
 
-  // if user comes from categories, lock to that slug
-  useEffect(()=>{
-    const s = sp.get("itemType");
-    if (s && getCategory(s)) {
-      setSlug(s);
-      const d = defaultsFor(s);
-      setWidth(d.width); setLength(d.length); setThickness(d.thickness);
-      setWood(d.wood); setFinish(d.finish); setEdge(d.edge); setResin(d.resin);
-      setGeometry(d.geometry); setLighting(d.lighting); setMetal(d.metal);
-      setCabinetLF(d.cabinetLF);
+  // Size fields (string inputs; convert safely for math)
+  const [length, setLength] = useState("72");   // in
+  const [width, setWidth]   = useState("36");   // in
+  const [thick, setThick]   = useState("1.5");  // in
+
+  const price = useMemo(()=>{
+    const base = BASE_BY_CATEGORY[slug] ?? 900;
+    let p = base;
+    p += RESIN_UPCHARGE[resin] ?? 0;
+    p += EDGE_UPCHARGE[edge] ?? 0;
+    p += FINISH_UPCHARGE[finish] ?? 0;
+    p += CRYSTAL_UPCHARGE[crystal] ?? 0;
+    p *= METAL_MULTIPLIER[metal] ?? 1;
+
+    // Rough size impact (only for table/tops/panels/shelves)
+    const L = toNum(length), W = toNum(width), T = toNum(thick);
+    const area = Math.max(1, (L*W)/144); // sq ft
+    if (["tables","conference-tables","tops"].includes(slug)) {
+      p += Math.max(0, (area - 12)) * 85; // beyond 12 sqft
+      p += Math.max(0, (T - 1)) * 180;    // thickness prem.
     }
-  }, [sp]);
+    if (slug==="wall-panels") p += Math.max(0, (area - 8)) * 60;
+    if (slug==="floating-shelves") p += Math.max(0, (L - 36)/6) * 25;
 
-  const cat = getCategory(slug)!;
-  const cats = listCategories();
-
-  const est = useMemo(()=>{
-    return estimate({
-      slug, width, length, thickness, wood, finish, edge, resin,
-      geometry, lighting, metal, cabinetLF
-    });
-  }, [slug,width,length,thickness,wood,finish,edge,resin,geometry,lighting,metal,cabinetLF]);
+    return Math.round(p);
+  },[slug, resin, edge, finish, crystal, metal, length, width, thick]);
 
   return (
-    <main style={{maxWidth:1180, margin:"0 auto", padding:24}}>
-      <h1 style={{fontSize:32,fontWeight:800,color:"#E8C987"}}>Configure Your {cat.label}</h1>
-      <p style={{color:"#cfcfcf",marginTop:6}}>
-        This configurator is **in sync** with the catalog. Choose a category, then refine materials and features.
-        All legs/bases are **sold and arranged separately** (availability changes frequently).
-      </p>
+    <main style={{minHeight:"100dvh", background:"#000", color:"#eee"}}>
+      <div style={{maxWidth:1180, margin:"0 auto", padding:"24px"}}>
+        <h1 style={{fontSize:28, fontWeight:800, color:"#E8C987"}}>
+          {cat?.title ?? "Custom Build"}
+        </h1>
+        <p style={{opacity:0.8, marginTop:6}}>
+          Configure materials and details. This is a live estimate; your formal proposal includes photoreal renders and engineered drawings.
+        </p>
 
-      <section style={{display:"grid",gridTemplateColumns:"1.05fr 1fr",gap:24,marginTop:18}}>
-        {/* left: options */}
-        <div style={{border:"1px solid rgba(255,255,255,0.12)",borderRadius:14,padding:16,background:"linear-gradient(180deg, rgba(232,201,135,0.06), rgba(0,0,0,0.25))"}}>
-          {/* Category */}
-          <div style={{marginBottom:12}}>
-            <Label>Category</Label>
-            <select
-              value={slug}
-              onChange={(e)=>setSlug(e.target.value)}
-              style={{width:"100%",background:"rgba(0,0,0,0.35)",border:"1px solid rgba(255,255,255,0.12)",color:"#eee",padding:"10px 12px",borderRadius:10}}
-            >
-              {cats.map(c=>(
-                <option key={c.slug} value={c.slug}>{c.label}</option>
-              ))}
-            </select>
-            <div style={{fontSize:12,opacity:0.7,marginTop:6}}>{cat.blurb}</div>
-          </div>
-
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-            {/* Dimensions or LF */}
-            {cat.show.dimensions && (
-              <>
-                <div><Label>Width (in)</Label><Input type="number" value={width} onChange={(v:any)=>setWidth(Number(v))} placeholder="e.g., 36"/></div>
-                <div><Label>Length (in)</Label><Input type="number" value={length} onChange={(v:any)=>setLength(Number(v))} placeholder="e.g., 72"/></div>
-                {!cat.hide?.thickness && (
-                  <div style={{gridColumn:"1 / -1"}}>
-                    <Label>Thickness (in)</Label>
-                    <Input type="number" value={thickness} onChange={(v:any)=>setThickness(Number(v))} placeholder="e.g., 1.75"/>
-                  </div>
-                )}
-              </>
-            )}
-            {cat.unit==="lf" && (
-              <div style={{gridColumn:"1 / -1"}}>
-                <Label>Linear Feet</Label>
-                <Input type="number" value={cabinetLF} onChange={(v:any)=>setCabinetLF(Number(v))} placeholder="e.g., 24"/>
+        <div style={{display:"grid", gridTemplateColumns:"1.05fr 0.95fr", gap:20, marginTop:20}}>
+          {/* Left: visual + headline price */}
+          <div style={{display:"grid", gap:16}}>
+            <Preview slug={slug} wood={wood} metal={metal} resin={resin} edge={edge} />
+            <div style={{
+              display:"flex", justifyContent:"space-between", alignItems:"center",
+              border:"1px solid rgba(232,201,135,0.2)", borderRadius:14, padding:"14px 16px"
+            }}>
+              <div>
+                <div style={{fontSize:12, opacity:0.8}}>Live Estimate</div>
+                <div style={{fontSize:28, fontWeight:800, color:"#E8C987"}}>${price.toLocaleString()}</div>
               </div>
-            )}
-
-            {/* Materials */}
-            <div><Label>Wood Species</Label><Select value={wood} onChange={setWood} options={[...WOODS] as unknown as string[]}/></div>
-            <div><Label>Finish</Label><Select value={finish} onChange={setFinish} options={[...FINISHES] as unknown as string[]}/></div>
-
-            {/* Metals */}
-            <div style={{gridColumn:"1 / -1"}}><Label>Metal Accents / Inlay</Label><Select value={metal} onChange={setMetal} options={[...METALS] as unknown as string[]}/></div>
-
-            {/* Edge / Resin */}
-            {cat.show.edge && (<div><Label>Edge Style</Label><Select value={edge} onChange={setEdge} options={[...EDGE_STYLES] as unknown as string[]}/></div>)}
-            {cat.show.resin && (<div><Label>Resin / Epoxy Pattern</Label><Select value={resin} onChange={setResin} options={[...RESIN_PATTERNS] as unknown as string[]}/></div>)}
-
-            {/* Geometry */}
-            {cat.show.geometry && (
-              <div style={{gridColumn:"1 / -1"}}>
-                <Label>Sacred Geometry (engrave/inlay)</Label>
-                <Select value={geometry} onChange={setGeometry} options={[...GEOMETRIES] as unknown as string[]}/>
-              </div>
-            )}
-
-            {/* Lighting */}
-            {cat.show.lighting && (
-              <div style={{gridColumn:"1 / -1"}}>
-                <Label>Lighting</Label>
-                <Select value={lighting} onChange={setLighting} options={[...LIGHTING] as unknown as string[]}/>
-              </div>
-            )}
-
-            {/* Cabinetry */}
-            {cat.show.cabinetry && (
-              <>
-                <div><Label>Cabinet Front</Label><Select value={"Shaker"} onChange={()=>{}} options={[...CABINET_FRONTS] as unknown as string[]}/></div>
-                <div><Label>Hardware</Label><Select value={"Black Matte"} onChange={()=>{}} options={[...HARDWARE] as unknown as string[]}/></div>
-              </>
-            )}
-          </div>
-
-          {/* Estimate + CTA */}
-          <div style={{marginTop:18,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div>
-              <div style={{fontSize:12,opacity:0.6}}>Estimated from</div>
-              <div style={{fontSize:28,fontWeight:800,color:"#E8C987"}}>${est.toLocaleString()}</div>
+              <a href={`/inquire?category=${slug}`}
+                 style={{padding:"10px 14px", borderRadius:10, border:"1px solid #E8C987", color:"#E8C987"}}>
+                Start Commission
+              </a>
             </div>
-            <a
-              href={`/contact?intent=quote&item=${encodeURIComponent(slug)}&w=${width}&l=${length}&t=${thickness}&wood=${encodeURIComponent(wood)}&metal=${encodeURIComponent(metal)}&finish=${encodeURIComponent(finish)}&geom=${encodeURIComponent(geometry)}&resin=${encodeURIComponent(resin)}&lighting=${encodeURIComponent(lighting)}&lf=${cabinetLF}`}
-              style={{padding:"12px 16px",borderRadius:10,background:"#E8C987",color:"#000",fontWeight:700}}
-            >
-              Start Your Quote →
-            </a>
           </div>
-          <div style={{fontSize:12,opacity:0.6,marginTop:8}}>
-            Final quotes account for joinery complexity, finish systems, specialty stock, and delivery scope.
-          </div>
-        </div>
 
-        {/* right: preview & quick links */}
-        <div style={{border:"1px solid rgba(255,255,255,0.12)",borderRadius:14,padding:12}}>
-          <div style={{height:360}}>
-            <Preview slug={slug} wood={wood} metal={metal} resin={resin} edge={edge}/>
-          </div>
-          <div style={{display:"flex",gap:10,marginTop:12,flexWrap:"wrap"}}>
-            <a href="/work" className="px-4 py-2 rounded-lg" style={{border:"1px solid rgba(255,255,255,0.2)"}}>View Recent Builds</a>
-            <a href="/categories" className="px-4 py-2 rounded-lg" style={{border:"1px solid rgba(255,255,255,0.2)"}}>Browse Categories</a>
-          </div>
-          <div style={{fontSize:12,opacity:0.65,marginTop:10}}>
-            Want to upload a real photo or sketch for reference? You can attach it on the quote form after this step.
+          {/* Right: options */}
+          <div style={{display:"grid", gap:14}}>
+            <Section title="Core Materials">
+              <div style={{display:"grid", gap:12}}>
+                <Field label="Wood Species">
+                  <Select value={wood} onChange={setWood} options={map.woods ?? WOODS}/>
+                </Field>
+                <Field label="Metal Treatment">
+                  <Select value={metal} onChange={setMetal} options={map.metals ?? METALS}/>
+                </Field>
+                {"resin" in map || ["tables","conference-tables","tops","wall-panels","reception-desks"].includes(slug) ? (
+                  <Field label="Resin Pattern">
+                    <Select value={resin} onChange={setResin} options={map.resin ?? RESIN_PATTERNS}/>
+                  </Field>
+                ) : null}
+                {"edges" in map || ["tables","conference-tables","tops","benches","doors"].includes(slug) ? (
+                  <Field label="Edge Profile">
+                    <Select value={edge} onChange={setEdge} options={map.edges ?? EDGE_STYLES}/>
+                  </Field>
+                ) : null}
+                <Field label="Finish">
+                  <Select value={finish} onChange={setFinish} options={map.finishes ?? FINISHES}/>
+                </Field>
+                {"crystals" in map || slug==="lighting" ? (
+                  <Field label="Crystal Integration">
+                    <Select value={crystal} onChange={setCrystal} options={map.crystals ?? CRYSTAL_MODES}/>
+                  </Field>
+                ) : null}
+              </div>
+            </Section>
+
+            <Section title="Dimensions">
+              <div style={{display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10}}>
+                <div>
+                  <Label>Length (in)</Label>
+                  <Input value={length} onChange={setLength} placeholder="e.g. 72" />
+                </div>
+                <div>
+                  <Label>Width (in)</Label>
+                  <Input value={width} onChange={setWidth} placeholder="e.g. 36" />
+                </div>
+                <div>
+                  <Label>Thickness (in)</Label>
+                  <Input value={thick} onChange={setThick} placeholder="e.g. 1.5" />
+                </div>
+              </div>
+              {CATEGORY_OPTIONS[slug]?.sizeHints && (
+                <div style={{fontSize:12, opacity:0.7, marginTop:8}}>
+                  Hint: {CATEGORY_OPTIONS[slug]?.sizeHints}
+                </div>
+              )}
+            </Section>
+
+            <Section title="Notes for the Workshop">
+              <textarea
+                placeholder="Describe patterns, joinery preferences, lighting intent, spiritual function, room context, etc."
+                style={{
+                  width:"100%", minHeight:100, background:"rgba(0,0,0,0.55)", color:"#E8C987",
+                  border:"1px solid rgba(232,201,135,0.25)", borderRadius:10, padding:"10px 12px"
+                }}
+              />
+            </Section>
+
+            <div style={{display:"grid", gap:10}}>
+              <a href={`/inquire?category=${slug}`}
+                 style={{display:"inline-block", textAlign:"center", padding:"12px 16px", borderRadius:12,
+                         background:"#E8C987", color:"#000", fontWeight:800}}>
+                Continue → Submit for Design & Photoreal Renders
+              </a>
+              <div style={{fontSize:12, opacity:0.65}}>
+                Next step includes a paid design session (applied to build) and photoreal visuals tailored to your space.
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
     </main>
   );
 }
 
-export default function Page(){
+export default function CustomPage(){
+  // Suspense wrapper satisfies Next warning for client search param hooks
   return (
-    <Suspense fallback={<main style={{maxWidth:1180,margin:"0 auto",padding:24,color:"#cfcfcf"}}>Loading…</main>}>
-      <Inner/>
+    <Suspense fallback={<div style={{padding:24}}>Loading configurator…</div>}>
+      <CustomInner />
     </Suspense>
   );
 }
