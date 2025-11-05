@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { CATEGORIES, CATEGORY_OPTIONS, listCategories } from "../../lib/catalog";
 export default function Categories(){
-  const cats = listCategories();
+const cats = CATEGORIES;  
 
   return (
     <main style={{maxWidth:1180, margin:"0 auto", padding:"24px"}}>
