@@ -1,6 +1,6 @@
 // src/app/categories/page.tsx
 import Link from "next/link";
-import { CATEGORIES, CATEGORY_OPTIONS, listCategories } from "../../lib/catalog";
+import { CATEGORIES, CATEGORY_OPTIONS } from "../../lib/catalog";
 export default function Categories(){
 const cats = CATEGORIES;  
 
