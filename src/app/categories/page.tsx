@@ -3,20 +3,38 @@ import Link from "next/link";
 const wrap={maxWidth:1100,margin:"0 auto",padding:"64px 20px"};
 const card={background:"rgba(255,255,255,.03)",border:"1px solid #2a2a2a",borderRadius:16,padding:16} as React.CSSProperties;
 
-const cats = [
-  { slug:"epoxy-river-tables", title:"Epoxy River Tables", blurb:"Single or dual rivers, clear or pigmented, mineral inlays." },
-  { slug:"live-edge-tables", title:"Live-Edge Tables", blurb:"Natural edge slabs with legacy joinery and curated finishes." },
-  { slug:"dining-tables", title:"Dining Tables", blurb:"Built for daily use, proportioned for conversation and flow." },
-  { slug:"coffee-tables", title:"Coffee Tables", blurb:"Compact function with high presence; layered geometry options." },
-  { slug:"desks", title:"Desks & Consoles", blurb:"Executive, writing, reception—cable management available." },
-  { slug:"conference-tables", title:"Conference Tables", blurb:"Boardroom builds with power, routing, and install options." },
-  { slug:"wall-panels", title:"Wall Panels", blurb:"Geometric or copper-lined feature panels for resonance." },
-  { slug:"wall-lights", title:"Wall Lights", blurb:"Selenite/brass or geometric fixtures—ambient halo lighting." },
-  { slug:"benches-altars", title:"Benches & Altars", blurb:"Meditation benches, sanctuary altars, ceremonial builds." },
-  { slug:"rails-shelves", title:"Rails & Shelves", blurb:"Meridian rails, floating shelves, copper pathway options." },
-  { slug:"mirrors-frames", title:"Mirrors & Frames", blurb:"Octagon mirrors, harmonic frames, subtle inlay work." },
-  { slug:"trays-accessories", title:"Trays & Accessories", blurb:"Coasters, charging disks, ritual trays, grid plates." },
-];
+import Link from "next/link";
+import { BUILD_TYPES, SUBTYPES, toSlug } from "@/lib/catalog";
+
+// inside your component's JSX where you map categories:
+<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+  {BUILD_TYPES.map((type) => (
+    <div key={type} className="rounded-xl border border-white/10 bg-black/40 p-5">
+      <h3 className="text-xl font-semibold text-[#E8C987]">{type}</h3>
+
+      <ul className="mt-3 text-sm text-neutral-300 space-y-1">
+        {SUBTYPES[type].map((sub) => (
+          <li key={sub} className="opacity-80">• {sub}</li>
+        ))}
+      </ul>
+
+      <div className="mt-5 flex gap-3">
+        <Link
+          href={`/custom?type=${encodeURIComponent(type)}`}
+          className="px-4 py-2 rounded-lg bg-[#E8C987] text-black font-semibold hover:opacity-90 transition"
+        >
+          Customize this Category
+        </Link>
+        <Link
+          href={`/work?filter=${toSlug(type)}`}
+          className="px-4 py-2 rounded-lg border border-[#E8C987] text-[#E8C987] hover:bg-[#E8C987] hover:text-black transition"
+        >
+          See Examples
+        </Link>
+      </div>
+    </div>
+  ))}
+</div>
 
 export default function Categories(){
   return (
