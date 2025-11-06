@@ -172,7 +172,7 @@ function CustomInner(){
   const [wood, setWood] = useState((map.woods ?? WOODS)[0]);
   const [metal, setMetal] = useState((map.metals ?? METALS)[0]);
   const [resin, setResin] = useState((map.resin ?? RESIN_PATTERNS)[0]);
-  const [edge, setEdge] = useState((map.edges ?? EDGE_STYLES)[0]);
+  const [edge, setEdge] = useState((map.edge ?? EDGE_STYLES)[0]);
   const [finish, setFinish] = useState((map.finishes ?? FINISHES)[0]);
   const [crystal, setCrystal] = useState((map.crystals ?? CRYSTAL_MODES)[0]);
 
