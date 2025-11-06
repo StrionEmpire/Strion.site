@@ -5,8 +5,15 @@ import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   getCategory,
+  getOptionsFor,
+  CATEGORIES,
   CATEGORY_OPTIONS,
-  WOODS, METALS, RESIN_PATTERNS, EDGE_STYLES, FINISHES, CRYSTAL_MODES
+  WOODS,
+  METALS,
+  RESIN_PATTERNS,
+  EDGE_STYLES,
+  FINISHES,
+  CRYSTAL_MODES
 } from "../../lib/catalog";
 
 // ---------- tiny field components ----------
