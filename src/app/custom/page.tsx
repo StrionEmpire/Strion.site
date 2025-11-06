@@ -247,9 +247,9 @@ function CustomInner(){
                     <Select value={resin} onChange={setResin} options={map.resin ?? RESIN_PATTERNS}/>
                   </Field>
                 ) : null}
-                {"edges" in map || ["tables","conference-tables","tops","benches","doors"].includes(slug) ? (
+                {"edge" in map || ["tables","conference-tables","tops","benches","doors"].includes(slug) ? (
                   <Field label="Edge Profile">
-                    <Select value={edge} onChange={setEdge} options={map.edges ?? EDGE_STYLES}/>
+                    <Select value={edge} onChange={setEdge} options={map.edge ?? EDGE_STYLES}/>
                   </Field>
                 ) : null}
                 <Field label="Finish">
